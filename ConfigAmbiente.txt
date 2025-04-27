@@ -1,0 +1,44 @@
+baixar o projeto do github em uma pasta no disco C
+
+***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
+
+abrir a pasta 'backend' pelo VSCode
+abrir o terminal do vscode
+rodar o comando para iniciar o servidor backend
+	node index.js
+
+***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
+versão node js	 v22.15.0 
+
+instalar o expo
+npm install -g @expo/cli
+versão @expo/cli	expo@52.0.46
+
+abrir a pasta 'ifreto' baixada do github no VSCode e rodar 'npm install' para instalar as dependencias no cmd (atalho crtl + ')
+
+para iniciar o projeto:
+	npx expo start	
+
+***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
+
+baixar o mongodb server community e o mongodb compass
+
+adicionar nas variaveis de ambiente do sistema no Path(C:\Program Files\MongoDB\Server\8.0\bin)
+
+criar a pasta 'data/db' no disco local c
+
+iniciar o mongodb no cmd com o comando 'mongod'
+
+abrir o mongodb compass
+
+criar uma nova conexão local
+
+criar novo banco de dados 'bancoIfreto' com a collection motoristas
+
+***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
+
+necessário alterar o valor de API_URL em 'app.json' e '.env'
+ 
+
+
+
