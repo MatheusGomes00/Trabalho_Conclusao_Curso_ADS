@@ -16,7 +16,7 @@ const LoginScreen = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/login`, {
+      const response = await axios.post(`${API_URL}/api/user/login`, {
         email: data.email,
         senha: data.senha,
       });
@@ -24,7 +24,14 @@ const LoginScreen = () => {
       Alert.alert('Sucesso', 'Login bem-sucedido!');
       router.replace('/home');
     } catch (error) {
-      const errorMessage = error.response?.data?.erro || error.message || 'Erro ao fazer login';
+      let errorMessage = 'Erro ao fazer login';
+      if (error.response?.data?.erro) {
+        errorMessage = Array.isArray(error.response.data.erro)
+          ? error.response.data.erro.join(', ')
+          : error.response.data.erro;
+      } else if (error.message.includes('Network Error')) {
+        errorMessage = 'Falha na conexão com o servidor';
+      }
       Alert.alert('Erro', errorMessage);
       console.error('Erro no login:', error);
     } finally {

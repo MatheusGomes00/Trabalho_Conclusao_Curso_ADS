@@ -26,8 +26,14 @@ const cadastroSchema = Joi.object({
 
 // Esquema de validação para login
 const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  senha: Joi.string().required(),
+  email: Joi.string().email().required().messages({
+    'string.email': 'E-mail deve ser válido',
+    'any.required': 'E-mail é obrigatório',
+  }),
+  senha: Joi.string().min(6).required().messages({
+    'string.min': 'Senha deve ter no mínimo 6 caracteres',
+    'any.required': 'Senha é obrigatória',
+  }),
 });
 
 // Cadastro de usuário

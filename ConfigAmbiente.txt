@@ -39,7 +39,7 @@ criar novo banco de dados 'bancoIfreto' com a collection motoristas
 
 abrir o cmd e rodar 'ipconfig'
 pegar o ip do Endereço IPv4
-necessário alterar o valor de API_URL em 'app.json' e '.env'
+necessário alterar o valor de API_URL em 'app.json' e '.env' no frontend iFreto e no backend no index.js linha 12 'origin'
  
 
 

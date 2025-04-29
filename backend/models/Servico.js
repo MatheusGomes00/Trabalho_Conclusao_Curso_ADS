@@ -46,6 +46,11 @@ const servicoSchema = new Schema({
   dataConclusao: {
     type: Date,
   },
+  rejeitadoPor: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Usuario',
+    default: [],
+  }],
 });
 
 export default model('Servico', servicoSchema);

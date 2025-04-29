@@ -18,7 +18,7 @@ const CadastroScreen = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/usuarios`, {
+      const response = await axios.post(`${API_URL}/api/user/usuarios`, {
         nome: data.nome,
         email: data.email,
         senha: data.senha,
