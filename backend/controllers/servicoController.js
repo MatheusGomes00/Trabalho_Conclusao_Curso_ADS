@@ -9,7 +9,7 @@ export const listarServicos = async (req, res) => {
       servicos = await Servico.find({
         $or: [
           { status: 'aberto', motorista: null, rejeitadoPor: { $nin: [id] } },
-          { status: { $in: ['aceito', 'em_andamento', 'concluido'] }, motorista: id },
+          { status: { $in: ['aceito', 'em andamento', 'concluido'] }, motorista: id },
         ],
       }).populate('cliente', 'nome email');
     } else if (tipo === 'cliente') {
@@ -31,7 +31,7 @@ export const criarServico = async (req, res) => {
     return res.status(403).json({ erro: 'Apenas clientes podem criar serviços' });
   }
 
-  const { origem, destino, tipoCarga, pesoEstimado, preco } = req.body;
+  const { origem, destino, tipoCarga, pesoEstimado, preco, dataAgendamento } = req.body;
 
   try {
     const servico = new Servico({
@@ -41,6 +41,7 @@ export const criarServico = async (req, res) => {
       tipoCarga,
       pesoEstimado,
       preco,
+      dataAgendamento
     });
 
     await servico.save();
@@ -86,11 +87,19 @@ export const rejeitarServico = async (req, res) => {
     if (!servico) {
       return res.status(404).json({ erro: 'Serviço não encontrado' });
     }
-    if (servico.status !== 'aberto') {
+
+    if (!['aberto', 'aceito'].includes(servico.status)) {
       return res.status(400).json({ erro: 'Serviço não está disponível para rejeição' });
     }
+
     if (servico.rejeitadoPor.includes(id)) {
       return res.status(400).json({ erro: 'Serviço já rejeitado por este motorista' });
+    }
+
+    if (servico.status === 'aceito') {
+      // Para serviços aceitos, redefinir status e limpar motorista
+      servico.status = 'aberto';
+      servico.motorista = null;
     }
 
     servico.rejeitadoPor.push(id);
@@ -98,7 +107,7 @@ export const rejeitarServico = async (req, res) => {
 
     res.json(servico);
   } catch (error) {
-    res.status(500).json({ erro: 'Erro ao rejeitar serviço' });
+    res.status(500).json({ erro: 'Erro ao rejeitar serviço: ' + error.message });
   }
 };
 
@@ -120,7 +129,7 @@ export const iniciarServico = async (req, res) => {
       return res.status(400).json({ erro: 'Serviço deve estar aceito para ser iniciado' });
     }
 
-    servico.status = 'em_andamento';
+    servico.status = 'em andamento';
     await servico.save();
 
     res.json(servico);
@@ -143,7 +152,7 @@ export const concluirServico = async (req, res) => {
     if (servico.motorista.toString() !== id) {
       return res.status(403).json({ erro: 'Apenas o motorista atribuído pode concluir o serviço' });
     }
-    if (servico.status !== 'em_andamento') {
+    if (servico.status !== 'em andamento') {
       return res.status(400).json({ erro: 'Serviço deve estar em andamento para ser concluído' });
     }
 

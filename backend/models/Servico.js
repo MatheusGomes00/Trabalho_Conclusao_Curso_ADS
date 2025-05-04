@@ -36,12 +36,15 @@ const servicoSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['aberto', 'aceito', 'em_andamento', 'concluido', 'cancelado'],
+    enum: ['aberto', 'aceito', 'em andamento', 'concluido', 'cancelado'],
     default: 'aberto',
   },
   dataCriacao: {
     type: Date,
     default: Date.now,
+  },
+  dataAgendamento: {
+    type: Date,
   },
   dataConclusao: {
     type: Date,
