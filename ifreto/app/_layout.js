@@ -38,6 +38,20 @@ export default function Layout() {
           headerBackVisible: false,
         }}
       />
+      <Stack.Screen
+        name="servicosDisponiveis"
+        options={{
+          title: 'Serviços Disponíveis',
+          headerBackVisible: true,
+        }}
+      />
+      <Stack.Screen
+        name="historico"
+        options={{
+          title: 'Histórico de Fretes',
+          headerBackVisible: true,
+        }}
+      />
     </Stack>
   );
 }

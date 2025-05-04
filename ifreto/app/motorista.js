@@ -1,23 +1,35 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 
 const Motorista = () => {
+
+  const router = useRouter();
+
+  const handleConsultarServicos = () => {
+    router.push('/servicosDisponiveis');
+  };
+
+  const handleConsultarHistorico = () => {
+    router.push('/historico');
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Cabecalho />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Card: Consultar Serviços */}
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={handleConsultarServicos}>
           <Ionicons name="search" size={40} color="#007AFF" />
           <Text style={styles.cardTitle}>Consultar Serviços</Text>
           <Text style={styles.cardSubtitle}>Veja fretes disponíveis</Text>
         </TouchableOpacity>
 
         {/* Card: Histórico de Serviços */}
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={handleConsultarHistorico}>
           <Ionicons name="time" size={40} color="#007AFF" />
           <Text style={styles.cardTitle}>Histórico de Serviços</Text>
           <Text style={styles.cardSubtitle}>Consulte seus fretes</Text>
@@ -35,6 +47,7 @@ const Motorista = () => {
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

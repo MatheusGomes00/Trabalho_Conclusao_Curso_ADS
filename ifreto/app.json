@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
-    "entryPoint": "node_modules/expo-router/entry",
     "extra": {
       "apiUrl": "http://192.168.100.31:5000"
     },
