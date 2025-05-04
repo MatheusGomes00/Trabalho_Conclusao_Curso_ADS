@@ -33,7 +33,7 @@ abrir o mongodb compass
 
 criar uma nova conexão local
 
-criar novo banco de dados 'bancoIfreto' com a collection motoristas
+criar novo banco de dados 'fretes' com a collection motoristas
 
 ***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
 
