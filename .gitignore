@@ -1,0 +1,11 @@
+# Dependências
+backend/node_modules/
+ifreto/node_modules/
+
+# Arquivos de lock
+backend/package-lock.json
+ifreto/package-lock.json
+
+# Cache e logs do npm
+npm-debug.log
+*.log

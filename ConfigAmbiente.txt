@@ -5,16 +5,15 @@ baixar o projeto do github em uma pasta no disco C
 abrir a pasta 'backend' pelo VSCode
 abrir o terminal do vscode
 rodar o comando para iniciar o servidor backend
+	npm install
 	node index.js
 
 ***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
 versão node js	 v22.15.0 
 
-instalar o expo
-npm install -g @expo/cli
-versão @expo/cli	expo@52.0.46
-
-abrir a pasta 'ifreto' baixada do github no VSCode e rodar 'npm install' para instalar as dependencias no cmd (atalho crtl + ')
+abrir a pasta 'ifreto' baixada do github no VSCode e instalar dependencias
+	npx expo install expo@53.0.7 ou npx expo install expo@^53.0.7 ou npx expo install expo@latest
+	npm install -- --legacy-peer-deps
 
 para iniciar o projeto:
 	npx expo start	
