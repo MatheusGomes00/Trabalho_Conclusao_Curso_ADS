@@ -32,13 +32,6 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
-        name="cliente"
-        options={{
-          title: 'Cliente',
-          headerBackVisible: false,
-        }}
-      />
-      <Stack.Screen
         name="servicosDisponiveis"
         options={{
           title: 'Serviços Disponíveis',
@@ -46,12 +39,34 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
-        name="historico"
+        name="historicoMotora"
         options={{
           title: 'Histórico de Fretes',
           headerBackVisible: true,
         }}
       />
+      <Stack.Screen
+        name="cliente"
+        options={{
+          title: 'Cliente',
+          headerBackVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name="historicoCliente"
+        options={{
+          title: 'Historico de Serviços',
+          headerBackVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name="postarServico"
+        options={{
+          title: 'Publicar serviço',
+          headerBackVisible: false,
+        }}
+      />
+      
     </Stack>
   );
 }

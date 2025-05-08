@@ -13,7 +13,7 @@ const Motorista = () => {
   };
 
   const handleConsultarHistorico = () => {
-    router.push('/historico');
+    router.push('/historicoMotora');
   }
 
   return (

@@ -1,58 +1,49 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
 
 
-const ServicosDisponiveis = () => {
+const Historico = () => {
   const [servicos, setServicos] = useState([]);
   const [selectedServico, setSelectedServico] = useState(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
-  // Função para carregar serviços disponíveis
-  const fetchServicos = async () => {
-    try {
-      setLoading(true);
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        Alert.alert('Erro', 'Usuário não autenticado');
-        return;
-      }
-
-      const response = await axios.get(`${API_URL}/api/servicos/buscar`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Filtrar apenas serviços com status 'aberto'
-      const servicosAbertos = response.data.filter((servico) => servico.status === 'aberto');
-      setServicos(servicosAbertos);
-    } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao carregar serviços';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao carregar serviços:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Carregar serviços na inicialização
+  // Carregar histórico de serviços
   useEffect(() => {
+    const fetchServicos = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          Alert.alert('Erro', 'Usuário não autenticado');
+          return;
+        }
+
+        const response = await axios.get(`${API_URL}/api/servicos/buscar`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Filtrar apenas serviços aceitos, em andamento ou concluídos
+        const filteredServicos = response.data.filter((servico) =>
+          ['aceito', 'em andamento', 'concluido'].includes(servico.status)
+        );
+        setServicos(filteredServicos);
+      } catch (error) {
+        const errorMessage = error.response?.data?.erro || 'Erro ao carregar histórico';
+        Alert.alert('Erro', errorMessage);
+        console.error('Erro ao carregar histórico:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchServicos();
   }, []);
-
-  // Função para atualizar a página
-  const handleAtualizar = () => {
-    fetchServicos();
-  };
-
-
 
   const handleSelectServico = (servico) => {
     setSelectedServico(servico);
@@ -68,55 +59,86 @@ const ServicosDisponiveis = () => {
     Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
   };
 
-  const handleAceitar = async () => {
+  const handleIniciar = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await axios.post(
-        `${API_URL}/api/servicos/${selectedServico._id}/aceitar`,
+        `${API_URL}/api/servicos/${selectedServico._id}/iniciar`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      Alert.alert('Sucesso', 'Serviço aceito com sucesso', [
+      Alert.alert('Sucesso', 'Frete iniciado com sucesso');
+      setServicos(servicos.map((s) =>
+        s._id === selectedServico._id ? { ...s, status: 'em andamento' } : s
+      ));
+      setSelectedServico({ ...selectedServico, status: 'em andamento' });
+    } catch (error) {
+      const errorMessage = error.response?.data?.erro || 'Erro ao iniciar frete';
+      Alert.alert('Erro', errorMessage);
+      console.error('Erro ao iniciar frete:', error);
+    }
+  };
+
+  const handleConcluir = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/api/servicos/${selectedServico._id}/concluir`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      Alert.alert('Sucesso', 'Frete concluído com sucesso');
+      setServicos(servicos.map((s) =>
+        s._id === selectedServico._id ? { ...s, status: 'concluido', dataConclusao: new Date() } : s
+      ));
+      setSelectedServico({ ...selectedServico, status: 'concluido', dataConclusao: new Date() });
+    } catch (error) {
+      const errorMessage = error.response?.data?.erro || 'Erro ao concluir frete';
+      Alert.alert('Erro', errorMessage);
+      console.error('Erro ao concluir frete:', error);
+    }
+  };
+
+  const handleRejeitar = async () => {
+    Alert.alert(
+      'Confirmar Rejeição',
+      'Deseja realmente desistir deste serviço?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'OK',
-          onPress: () => router.push('/historicoMotora'),
+            text: 'Rejeitar',
+            style: 'destructive',
+            onPress: async () => {
+            try {
+                const token = await AsyncStorage.getItem('token');
+                const response = await axios.post(
+                `${API_URL}/api/servicos/${selectedServico._id}/rejeitar`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                Alert.alert('Sucesso', 'Serviço rejeitado com sucesso');
+                setServicos(servicos.filter((s) => s._id !== selectedServico._id));
+                setSelectedServico(null);
+            } catch (error) {
+                const errorMessage = error.response?.data?.erro || 'Erro ao rejeitar serviço';
+                Alert.alert('Erro', errorMessage);
+                console.error('Erro ao rejeitar serviço:', error);
+            }
+            },
         },
-      ]);
-      setServicos(servicos.filter((s) => s._id !== selectedServico._id));
-      setSelectedServico(null);
-    } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao aceitar serviço';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao aceitar serviço:', error);
-    }
-  };
-
-  const handleRecusar = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/servicos/${selectedServico._id}/rejeitar`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      Alert.alert('Sucesso', 'Serviço rejeitado com sucesso');
-      setServicos(servicos.filter((s) => s._id !== selectedServico._id));
-      setSelectedServico(null);
-    } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao rejeitar serviço';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao rejeitar serviço:', error);
-    }
-  };
+      ]
+    );
+  };  
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <Cabecalho />
         <View style={styles.loadingContainer}>
-          <Text>Carregando serviços...</Text>
+          <Text>Carregando histórico...</Text>
         </View>
         <Rodape />
       </SafeAreaView>
@@ -127,22 +149,16 @@ const ServicosDisponiveis = () => {
     <SafeAreaView style={styles.container}>
       <Cabecalho />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.header}>Serviços Disponíveis</Text>
-          <View style={styles.controlsContainer}>
-            <View style={styles.filterPlaceholder} />
-            <TouchableOpacity style={styles.refreshButton} onPress={handleAtualizar}>
-                <Ionicons name="refresh" size={20} color="#FFFFFF" />
-                <Text style={styles.refreshButtonText}>Atualizar</Text>
-            </TouchableOpacity>
-            </View>
-        </View>
+        <Text style={styles.header}>Histórico de Fretes</Text>
         {selectedServico ? (
           <View style={styles.detailCard}>
             <TouchableOpacity style={styles.closeButton} onPress={handleCloseDetails}>
               <Ionicons name="close" size={24} color="#333" />
             </TouchableOpacity>
-            <Text style={styles.detailTitle}>Detalhes do Serviço</Text>
+            <Text style={styles.detailTitle}>Detalhes do Frete</Text>
+            <Text style={styles.detailText}>
+              Cliente: {selectedServico.cliente?.nome || 'Não disponível'}
+            </Text>
             <Text style={styles.detailText}>
               Origem: {selectedServico.origem.cidade}, {selectedServico.origem.estado}
             </Text>
@@ -157,24 +173,33 @@ const ServicosDisponiveis = () => {
               Data de Criação: {new Date(selectedServico.dataCriacao).toLocaleDateString()}
             </Text>
             <Text style={styles.detailText}>
-              Data de Agendamento:{' '}
-              {selectedServico.dataAgendamento
+              Data de Agendamento: {selectedServico.dataAgendamento
                 ? new Date(selectedServico.dataAgendamento).toLocaleDateString()
                 : 'Não definida'}
+            </Text>
+            <Text style={styles.detailText}>
+              Data de Conclusão: {selectedServico.dataConclusao
+                ? new Date(selectedServico.dataConclusao).toLocaleDateString()
+                : 'Não concluído'}
             </Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
                 <Text style={styles.buttonText}>Entrar em Contato</Text>
               </TouchableOpacity>
-              {selectedServico.status === 'aberto' && (
+              {selectedServico.status === 'aceito' && (
                 <>
-                  <TouchableOpacity style={styles.acceptButton} onPress={handleAceitar}>
-                    <Text style={styles.buttonText}>Aceitar</Text>
+                  <TouchableOpacity style={styles.startButton} onPress={handleIniciar}>
+                    <Text style={styles.buttonText}>Iniciar Frete</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.rejectButton} onPress={handleRecusar}>
-                    <Text style={styles.buttonText}>Recusar</Text>
+                  <TouchableOpacity style={styles.rejectButton} onPress={handleRejeitar}>
+                    <Text style={styles.buttonText}>Rejeitar</Text>
                   </TouchableOpacity>
                 </>
+              )}
+              {selectedServico.status === 'em andamento' && (
+                <TouchableOpacity style={styles.completeButton} onPress={handleConcluir}>
+                  <Text style={styles.buttonText}>Concluir Frete</Text>
+                </TouchableOpacity>
               )}
             </View>
           </View>
@@ -195,11 +220,12 @@ const ServicosDisponiveis = () => {
                     Destino: {servico.destino.cidade}, {servico.destino.estado}
                   </Text>
                   <Text style={styles.cardPrice}>R$ {servico.preco.toFixed(2)}</Text>
+                  <Text style={styles.cardStatus}>Status: {servico.status}</Text>
                 </View>
               </TouchableOpacity>
             ))
           ) : (
-            <Text style={styles.noServicos}>Nenhum serviço disponível</Text>
+            <Text style={styles.noServicos}>Nenhum frete encontrado no histórico</Text>
           )
         )}
       </ScrollView>
@@ -225,30 +251,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-  },
-  controlsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 20,
-  },
-  filterPlaceholder: {
-    flex: 1,
-    marginRight: 10,
-  },
-  refreshButton: {
-    flexDirection: 'row',
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-  },
-  refreshButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 5,
   },
   card: {
     flexDirection: 'row',
@@ -277,6 +280,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#007AFF',
+  },
+  cardStatus: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
   },
   detailCard: {
     backgroundColor: '#FFFFFF',
@@ -308,6 +316,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+    flexWrap: 'wrap',
   },
   contactButton: {
     backgroundColor: '#007AFF',
@@ -315,14 +324,24 @@ const styles = StyleSheet.create({
     padding: 10,
     flex: 1,
     marginRight: 10,
+    marginBottom: 10,
     alignItems: 'center',
   },
-  acceptButton: {
+  startButton: {
     backgroundColor: '#34C759',
     borderRadius: 5,
     padding: 10,
     flex: 1,
     marginRight: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  completeButton: {
+    backgroundColor: '#34C759',
+    borderRadius: 5,
+    padding: 10,
+    flex: 1,
+    marginBottom: 10,
     alignItems: 'center',
   },
   rejectButton: {
@@ -330,6 +349,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     flex: 1,
+    marginBottom: 10,
     alignItems: 'center',
   },
   buttonText: {
@@ -344,4 +364,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ServicosDisponiveis;
+export default Historico;
