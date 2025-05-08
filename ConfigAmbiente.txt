@@ -41,5 +41,20 @@ pegar o ip do Endereço IPv4
 necessário alterar o valor de API_URL em 'app.json' e '.env' no frontend iFreto e no backend no index.js linha 12 'origin'
  
 
+***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
+
+se os arquivos listados abaixo aparecerem para serem incluidos no commit, rodar o comando
+
+git rm -r --cached backend/node_modules
+git rm -r --cached ifreto/node_modules
+git rm --cached backend/package-lock.json
+git rm --cached ifreto/package-lock.json
+
+
+
+
+
+
+
 
 
