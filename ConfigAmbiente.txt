@@ -36,10 +36,10 @@ criar novo banco de dados 'fretes' com a collection motoristas
 
 ***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
 
+necessário alterar o valor de API_URL em '.env' no frontend iFreto e no backend no index.js linha 12 'origin', pelo IPv4 da máquina que roda o backend
 abrir o cmd e rodar 'ipconfig'
 pegar o ip do Endereço IPv4
-necessário alterar o valor de API_URL em 'app.json' e '.env' no frontend iFreto e no backend no index.js linha 12 'origin'
- 
+
 
 ***	***	***	***	***	***	***	***	***	***	***	***	***	***	***	***
 
