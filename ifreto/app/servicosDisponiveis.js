@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -7,8 +7,8 @@ import axios from 'axios';
 import { useRouter } from 'expo-router';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
+import { API_URL } from '../config';
 
-const API_URL = 'http://192.168.100.31:5000';
 
 const ServicosDisponiveis = () => {
   const [servicos, setServicos] = useState([]);

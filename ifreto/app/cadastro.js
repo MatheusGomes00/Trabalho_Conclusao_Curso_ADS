@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
-import Constants from 'expo-constants';
-
-const API_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:5000';
+import { API_URL } from '../config';
 
 const CadastroScreen = () => {
   const { control, handleSubmit, watch, formState: { errors } } = useForm();

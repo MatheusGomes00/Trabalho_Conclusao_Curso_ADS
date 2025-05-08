@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import Constants from 'expo-constants';
-
-const API_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:5000';
+import { API_URL } from '../config';
 
 const LoginScreen = () => {
   const { control, handleSubmit, formState: { errors } } = useForm();
@@ -16,6 +14,7 @@ const LoginScreen = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      console.log('API_URL:', API_URL);
       const response = await axios.post(`${API_URL}/api/user/login`, {
         email: data.email,
         senha: data.senha,

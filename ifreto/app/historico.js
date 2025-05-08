@@ -6,8 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
+import { API_URL } from '../config';
 
-const API_URL = 'http://192.168.100.31:5000';
 
 const Historico = () => {
   const [servicos, setServicos] = useState([]);
