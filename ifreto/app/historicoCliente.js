@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { Picker } from '@react-native-picker/picker';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
 
 
-const Historico = () => {
+const HistoricoCliente = () => {
   const [servicos, setServicos] = useState([]);
   const [selectedServico, setSelectedServico] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filtroStatus, setFiltroStatus] = useState('todos');
 
   // Carregar histórico de serviços
   useEffect(() => {
@@ -28,11 +30,7 @@ const Historico = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Filtrar apenas serviços aceitos, em andamento ou concluídos
-        const filteredServicos = response.data.filter((servico) =>
-          ['aceito', 'em andamento', 'concluido'].includes(servico.status)
-        );
-        setServicos(filteredServicos);
+        setServicos(response.data); // Corrigido: response.data
       } catch (error) {
         const errorMessage = error.response?.data?.erro || 'Erro ao carregar histórico';
         Alert.alert('Erro', errorMessage);
@@ -54,84 +52,47 @@ const Historico = () => {
   };
 
   const handleContactar = () => {
-    // Placeholder para chat
     console.log('Entrar em contato:', selectedServico?._id);
     Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
   };
 
-  const handleIniciar = async () => {
+  const handleCancelarPub = async () => {
+    if (!selectedServico) return;
+
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/servicos/${selectedServico._id}/iniciar`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      if (!token) {
+        Alert.alert('Erro', 'Usuário não autenticado');
+        return;
+      }
 
-      Alert.alert('Sucesso', 'Frete iniciado com sucesso');
-      setServicos(servicos.map((s) =>
-        s._id === selectedServico._id ? { ...s, status: 'em andamento' } : s
-      ));
-      setSelectedServico({ ...selectedServico, status: 'em andamento' });
+      await axios.post(`${API_URL}/api/servicos/${selectedServico._id}/cancelar`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Atualizar lista localmente
+      setServicos((prev) =>
+        prev.map((s) =>
+          s._id === selectedServico._id ? { ...s, status: 'cancelado' } : s
+        )
+      );
+      setSelectedServico({ ...selectedServico, status: 'cancelado' });
+
+      Alert.alert('Sucesso', 'Serviço cancelado com sucesso');
     } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao iniciar frete';
+      const errorMessage =
+        error.response?.status === 400
+          ? 'Não é possível cancelar: serviço não está aberto ou aceito'
+          : error.response?.data?.erro || 'Erro ao cancelar serviço';
       Alert.alert('Erro', errorMessage);
-      console.error('Erro ao iniciar frete:', error);
+      console.error('Erro ao cancelar serviço:', error);
     }
   };
 
-  const handleConcluir = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/servicos/${selectedServico._id}/concluir`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      Alert.alert('Sucesso', 'Frete concluído com sucesso');
-      setServicos(servicos.map((s) =>
-        s._id === selectedServico._id ? { ...s, status: 'concluido', dataConclusao: new Date() } : s
-      ));
-      setSelectedServico({ ...selectedServico, status: 'concluido', dataConclusao: new Date() });
-    } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao concluir frete';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao concluir frete:', error);
-    }
+  const filtrarServicos = () => {
+    if (filtroStatus === 'todos') return servicos;
+    return servicos.filter((servico) => servico.status === filtroStatus);
   };
-
-  const handleRejeitar = async () => {
-    Alert.alert(
-      'Confirmar Rejeição',
-      'Deseja realmente desistir deste serviço?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-            text: 'Rejeitar',
-            style: 'destructive',
-            onPress: async () => {
-            try {
-                const token = await AsyncStorage.getItem('token');
-                const response = await axios.post(
-                `${API_URL}/api/servicos/${selectedServico._id}/rejeitar`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-                );
-
-                Alert.alert('Sucesso', 'Serviço rejeitado com sucesso');
-                setServicos(servicos.filter((s) => s._id !== selectedServico._id));
-                setSelectedServico(null);
-            } catch (error) {
-                const errorMessage = error.response?.data?.erro || 'Erro ao rejeitar serviço';
-                Alert.alert('Erro', errorMessage);
-                console.error('Erro ao rejeitar serviço:', error);
-            }
-            },
-        },
-      ]
-    );
-  };  
 
   if (loading) {
     return (
@@ -149,7 +110,22 @@ const Historico = () => {
     <SafeAreaView style={styles.container}>
       <Cabecalho />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.header}>Histórico de Fretes</Text>
+        <View style={styles.headerContainer}>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={filtroStatus}
+              onValueChange={(value) => setFiltroStatus(value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Todos" value="todos" />
+              <Picker.Item label="Aberto" value="aberto" />
+              <Picker.Item label="Aceito" value="aceito" />
+              <Picker.Item label="Em Andamento" value="em andamento" />
+              <Picker.Item label="Concluído" value="concluido" />
+              <Picker.Item label="Cancelado" value="cancelado" />
+            </Picker>
+          </View>
+        </View>
         {selectedServico ? (
           <View style={styles.detailCard}>
             <TouchableOpacity style={styles.closeButton} onPress={handleCloseDetails}>
@@ -160,14 +136,18 @@ const Historico = () => {
               Cliente: {selectedServico.cliente?.nome || 'Não disponível'}
             </Text>
             <Text style={styles.detailText}>
-              Origem: {selectedServico.origem.cidade}, {selectedServico.origem.estado}
+              Origem: {selectedServico.origem.endereco}, {selectedServico.origem.cidade}, {selectedServico.origem.estado}
             </Text>
             <Text style={styles.detailText}>
-              Destino: {selectedServico.destino.cidade}, {selectedServico.destino.estado}
+              Destino: {selectedServico.destino.endereco}, {selectedServico.destino.cidade}, {selectedServico.destino.estado}
             </Text>
             <Text style={styles.detailText}>Tipo de Carga: {selectedServico.tipoCarga}</Text>
-            <Text style={styles.detailText}>Peso Estimado: {selectedServico.pesoEstimado} kg</Text>
-            <Text style={styles.detailText}>Preço: R$ {selectedServico.preco.toFixed(2)}</Text>
+            <Text style={styles.detailText}>
+              Peso Estimado: {selectedServico.pesoEstimado ? `${selectedServico.pesoEstimado} kg` : 'Não definido'}
+            </Text>
+            <Text style={styles.detailText}>
+              Preço: {selectedServico.preco ? `R$ ${selectedServico.preco.toFixed(2)}` : 'Combinar'}
+            </Text>
             <Text style={styles.detailText}>Status: {selectedServico.status}</Text>
             <Text style={styles.detailText}>
               Data de Criação: {new Date(selectedServico.dataCriacao).toLocaleDateString()}
@@ -175,7 +155,7 @@ const Historico = () => {
             <Text style={styles.detailText}>
               Data de Agendamento: {selectedServico.dataAgendamento
                 ? new Date(selectedServico.dataAgendamento).toLocaleDateString()
-                : 'Não definida'}
+                : 'Não definido'}
             </Text>
             <Text style={styles.detailText}>
               Data de Conclusão: {selectedServico.dataConclusao
@@ -186,26 +166,16 @@ const Historico = () => {
               <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
                 <Text style={styles.buttonText}>Entrar em Contato</Text>
               </TouchableOpacity>
-              {selectedServico.status === 'aceito' && (
-                <>
-                  <TouchableOpacity style={styles.startButton} onPress={handleIniciar}>
-                    <Text style={styles.buttonText}>Iniciar Frete</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.rejectButton} onPress={handleRejeitar}>
-                    <Text style={styles.buttonText}>Rejeitar</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-              {selectedServico.status === 'em andamento' && (
-                <TouchableOpacity style={styles.completeButton} onPress={handleConcluir}>
-                  <Text style={styles.buttonText}>Concluir Frete</Text>
+              {(selectedServico.status === 'aberto' || selectedServico.status === 'aceito') && (
+                <TouchableOpacity style={styles.cancelButton} onPress={handleCancelarPub}>
+                  <Text style={styles.buttonText}>Cancelar Serviço</Text>
                 </TouchableOpacity>
               )}
             </View>
           </View>
         ) : (
-          servicos.length > 0 ? (
-            servicos.map((servico) => (
+          filtrarServicos().length > 0 ? (
+            filtrarServicos().map((servico) => (
               <TouchableOpacity
                 key={servico._id}
                 style={styles.card}
@@ -214,18 +184,20 @@ const Historico = () => {
                 <AntDesign name="enviromento" size={24} color="black" />
                 <View style={styles.cardContent}>
                   <Text style={styles.cardTitle}>
-                    Origem: {servico.origem.cidade}, {servico.origem.estado}
+                    Origem: {servico.origem.endereco}, {servico.origem.cidade}, {servico.origem.estado}
                   </Text>
                   <Text style={styles.cardTitle}>
-                    Destino: {servico.destino.cidade}, {servico.destino.estado}
+                    Destino: {servico.destino.endereco}, {servico.destino.cidade}, {servico.destino.estado}
                   </Text>
-                  <Text style={styles.cardPrice}>R$ {servico.preco.toFixed(2)}</Text>
+                  <Text style={styles.cardPrice}>
+                    Valor: {servico.preco ? `R$ ${servico.preco.toFixed(2)}` : 'Combinar'}
+                  </Text>
                   <Text style={styles.cardStatus}>Status: {servico.status}</Text>
                 </View>
               </TouchableOpacity>
             ))
           ) : (
-            <Text style={styles.noServicos}>Nenhum frete encontrado no histórico</Text>
+            <Text style={styles.noServicos}>Nenhum frete encontrado</Text>
           )
         )}
       </ScrollView>
@@ -253,6 +225,20 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  picker: {
+    height: 50,
+    color: '#333',
+  },
   card: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -279,12 +265,12 @@ const styles = StyleSheet.create({
   cardPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#333',
   },
   cardStatus: {
     fontSize: 14,
     color: '#666',
-    marginTop: 5,
+    fontWeight: 'bold',
   },
   detailCard: {
     backgroundColor: '#FFFFFF',
@@ -316,6 +302,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+    gap: 10,
     flexWrap: 'wrap',
   },
   contactButton: {
@@ -326,6 +313,18 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 10,
     alignItems: 'center',
+    minWidth: 120,
+  },
+  cancelButton: {
+    backgroundColor: '#FF3B30', // Fundo vermelho visível
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+    minWidth: 120,
+    opacity: 1,
   },
   startButton: {
     backgroundColor: '#34C759',
@@ -364,4 +363,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Historico;
+export default HistoricoCliente;

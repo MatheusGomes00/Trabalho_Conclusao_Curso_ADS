@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { Picker } from '@react-native-picker/picker';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
@@ -13,6 +14,7 @@ const Historico = () => {
   const [servicos, setServicos] = useState([]);
   const [selectedServico, setSelectedServico] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filtroStatus, setFiltroStatus] = useState('todos');
 
   // Carregar histórico de serviços
   useEffect(() => {
@@ -108,30 +110,36 @@ const Historico = () => {
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-            text: 'Rejeitar',
-            style: 'destructive',
-            onPress: async () => {
-            try {
-                const token = await AsyncStorage.getItem('token');
-                const response = await axios.post(
-                `${API_URL}/api/servicos/${selectedServico._id}/rejeitar`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-                );
+          text: 'Rejeitar',
+          style: 'destructive',
+          onPress: async () => {
+          try {
+            const token = await AsyncStorage.getItem('token');
+            const response = await axios.post(
+            `${API_URL}/api/servicos/${selectedServico._id}/rejeitar`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-                Alert.alert('Sucesso', 'Serviço rejeitado com sucesso');
-                setServicos(servicos.filter((s) => s._id !== selectedServico._id));
-                setSelectedServico(null);
-            } catch (error) {
-                const errorMessage = error.response?.data?.erro || 'Erro ao rejeitar serviço';
-                Alert.alert('Erro', errorMessage);
-                console.error('Erro ao rejeitar serviço:', error);
-            }
-            },
+            Alert.alert('Sucesso', 'Serviço rejeitado com sucesso');
+            setServicos(servicos.filter((s) => s._id !== selectedServico._id));
+            setSelectedServico(null);
+          } catch (error) {
+            const errorMessage = error.response?.data?.erro || 'Erro ao rejeitar serviço';
+            Alert.alert('Erro', errorMessage);
+            console.error('Erro ao rejeitar serviço:', error);
+          }
+          },
         },
       ]
     );
   };  
+
+  const filtrarServicos = () => {
+    if (filtroStatus === 'todos') return servicos;
+    return servicos.filter((servico) => servico.status === filtroStatus);
+  };
+
 
   if (loading) {
     return (
@@ -149,7 +157,20 @@ const Historico = () => {
     <SafeAreaView style={styles.container}>
       <Cabecalho />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.header}>Histórico de Fretes</Text>
+        <View style={styles.headerContainer}>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={filtroStatus}
+              onValueChange={(value) => setFiltroStatus(value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Todos" value="todos" />
+              <Picker.Item label="Aceito" value="aceito" />
+              <Picker.Item label="Em Andamento" value="em andamento" />
+              <Picker.Item label="Concluído" value="concluido" />
+            </Picker>
+          </View>
+        </View>
         {selectedServico ? (
           <View style={styles.detailCard}>
             <TouchableOpacity style={styles.closeButton} onPress={handleCloseDetails}>
@@ -160,14 +181,14 @@ const Historico = () => {
               Cliente: {selectedServico.cliente?.nome || 'Não disponível'}
             </Text>
             <Text style={styles.detailText}>
-              Origem: {selectedServico.origem.cidade}, {selectedServico.origem.estado}
+              Origem: {selectedServico.origem.endereco}, {selectedServico.origem.cidade}, {selectedServico.origem.estado}
             </Text>
             <Text style={styles.detailText}>
-              Destino: {selectedServico.destino.cidade}, {selectedServico.destino.estado}
+              Destino: {selectedServico.destino.endereco}, {selectedServico.destino.cidade}, {selectedServico.destino.estado}
             </Text>
             <Text style={styles.detailText}>Tipo de Carga: {selectedServico.tipoCarga}</Text>
-            <Text style={styles.detailText}>Peso Estimado: {selectedServico.pesoEstimado} kg</Text>
-            <Text style={styles.detailText}>Preço: R$ {selectedServico.preco.toFixed(2)}</Text>
+            <Text style={styles.detailText}>Peso Estimado: {selectedServico.pesoEstimado ? `${selectedServico.pesoEstimado} kg` : 'Não definido'}</Text>
+            <Text style={styles.detailText}>Preço: {selectedServico.preco ? `R$ ${selectedServico.preco.toFixed(2)}` : 'Combinar'}</Text>
             <Text style={styles.detailText}>Status: {selectedServico.status}</Text>
             <Text style={styles.detailText}>
               Data de Criação: {new Date(selectedServico.dataCriacao).toLocaleDateString()}
@@ -204,8 +225,8 @@ const Historico = () => {
             </View>
           </View>
         ) : (
-          servicos.length > 0 ? (
-            servicos.map((servico) => (
+          filtrarServicos().length > 0 ? (
+            filtrarServicos().map((servico) => (
               <TouchableOpacity
                 key={servico._id}
                 style={styles.card}
@@ -214,18 +235,20 @@ const Historico = () => {
                 <AntDesign name="enviromento" size={24} color="black" />
                 <View style={styles.cardContent}>
                   <Text style={styles.cardTitle}>
-                    Origem: {servico.origem.cidade}, {servico.origem.estado}
+                    Origem: {servico.origem.endereco}, {servico.origem.cidade}, {servico.origem.estado}
                   </Text>
                   <Text style={styles.cardTitle}>
-                    Destino: {servico.destino.cidade}, {servico.destino.estado}
+                    Destino: {servico.destino.endereco}, {servico.destino.cidade}, {servico.destino.estado}
                   </Text>
-                  <Text style={styles.cardPrice}>R$ {servico.preco.toFixed(2)}</Text>
+                  <Text style={styles.cardPrice}>
+                    Valor: {servico.preco ? `R$ ${servico.preco.toFixed(2)}` : 'Combinar'}
+                  </Text>
                   <Text style={styles.cardStatus}>Status: {servico.status}</Text>
                 </View>
               </TouchableOpacity>
             ))
           ) : (
-            <Text style={styles.noServicos}>Nenhum frete encontrado no histórico</Text>
+            <Text style={styles.noServicos}>Nenhum frete encontrado</Text>
           )
         )}
       </ScrollView>
@@ -253,6 +276,20 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  picker: {
+    height: 50,
+    color: '#333',
+  },
   card: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -279,12 +316,12 @@ const styles = StyleSheet.create({
   cardPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#333',
   },
   cardStatus: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666',
-    marginTop: 5,
+    fontWeight: 'bold',
   },
   detailCard: {
     backgroundColor: '#FFFFFF',
