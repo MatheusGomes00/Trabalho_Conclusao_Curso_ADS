@@ -1,347 +1,324 @@
-import { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { useForm, Controller } from 'react-hook-form';
+import React, { useState } from 'react';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import Cabecalho from '../components/Cabecalho';
-import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { StyleSheet } from 'react-native';
 
-
-const ServicosDisponiveis = () => {
-  const [servicos, setServicos] = useState([]);
-  const [selectedServico, setSelectedServico] = useState(null);
-  const [loading, setLoading] = useState(true);
+const PostarServico = () => {
+  const { control, handleSubmit, reset, formState: { errors } } = useForm();
   const router = useRouter();
 
-  // Função para carregar serviços disponíveis
-  const fetchServicos = async () => {
+  const onSubmit = async (data) => {
     try {
-      setLoading(true);
       const token = await AsyncStorage.getItem('token');
       if (!token) {
-        Alert.alert('Erro', 'Usuário não autenticado');
+        Alert.alert('Erro', 'Você precisa estar logado para publicar um serviço.');
         return;
       }
 
-      const response = await axios.get(`${API_URL}/api/servicos/buscar`, {
+      const payload = {
+        origem: {
+          cidade: data.cidadeOrigem,
+          estado: data.estadoOrigem,
+          endereco: data.enderecoOrigem,
+        },
+        destino: {
+          cidade: data.cidadeDestino,
+          estado: data.estadoDestino,
+          endereco: data.enderecoDestino,
+        },
+        tipoCarga: data.tipoCarga,
+        pesoEstimado: Number(data.pesoEstimado),
+        preco: Number(data.preco),
+        dataAgendamento: data.dataAgendamento ? new Date(data.dataAgendamento) : undefined,
+      };
+
+      const response = await axios.post(`${API_URL}/api/servicos/criar`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Filtrar apenas serviços com status 'aberto'
-      const servicosAbertos = response.data.filter((servico) => servico.status === 'aberto');
-      setServicos(servicosAbertos);
+      Alert.alert('Sucesso', 'Serviço publicado com sucesso!');
+      reset();
+      router.push('/historicoCliente');
     } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao carregar serviços';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao carregar serviços:', error);
-    } finally {
-      setLoading(false);
+      console.error('Erro ao publicar serviço:', error.message, error.response?.data);
+      Alert.alert('Erro', error.response?.data?.message || 'Falha ao publicar serviço.');
     }
   };
-
-  // Carregar serviços na inicialização
-  useEffect(() => {
-    fetchServicos();
-  }, []);
-
-  // Função para atualizar a página
-  const handleAtualizar = () => {
-    fetchServicos();
-  };
-
-
-
-  const handleSelectServico = (servico) => {
-    setSelectedServico(servico);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedServico(null);
-  };
-
-  const handleContactar = () => {
-    // Placeholder para chat
-    console.log('Entrar em contato:', selectedServico?._id);
-    Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
-  };
-
-  const handleAceitar = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/servicos/${selectedServico._id}/aceitar`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      Alert.alert('Sucesso', 'Serviço aceito com sucesso', [
-        {
-          text: 'OK',
-          onPress: () => router.push('/historicoMotora'),
-        },
-      ]);
-      setServicos(servicos.filter((s) => s._id !== selectedServico._id));
-      setSelectedServico(null);
-    } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao aceitar serviço';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao aceitar serviço:', error);
-    }
-  };
-
-  const handleRecusar = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/servicos/${selectedServico._id}/rejeitar`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      Alert.alert('Sucesso', 'Serviço rejeitado com sucesso');
-      setServicos(servicos.filter((s) => s._id !== selectedServico._id));
-      setSelectedServico(null);
-    } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao rejeitar serviço';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao rejeitar serviço:', error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Cabecalho />
-        <View style={styles.loadingContainer}>
-          <Text>Carregando serviços...</Text>
-        </View>
-        <Rodape />
-      </SafeAreaView>
-    );
-  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Cabecalho />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.header}>Serviços Disponíveis</Text>
-          <View style={styles.controlsContainer}>
-            <View style={styles.filterPlaceholder} />
-            <TouchableOpacity style={styles.refreshButton} onPress={handleAtualizar}>
-                <Ionicons name="refresh" size={20} color="#FFFFFF" />
-                <Text style={styles.refreshButtonText}>Atualizar</Text>
-            </TouchableOpacity>
-            </View>
-        </View>
-        {selectedServico ? (
-          <View style={styles.detailCard}>
-            <TouchableOpacity style={styles.closeButton} onPress={handleCloseDetails}>
-              <Ionicons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.detailTitle}>Detalhes do Serviço</Text>
-            <Text style={styles.detailText}>
-              Origem: {selectedServico.origem.cidade}, {selectedServico.origem.estado}
-            </Text>
-            <Text style={styles.detailText}>
-              Destino: {selectedServico.destino.cidade}, {selectedServico.destino.estado}
-            </Text>
-            <Text style={styles.detailText}>Tipo de Carga: {selectedServico.tipoCarga}</Text>
-            <Text style={styles.detailText}>Peso Estimado: {selectedServico.pesoEstimado} kg</Text>
-            <Text style={styles.detailText}>Preço: R$ {selectedServico.preco.toFixed(2)}</Text>
-            <Text style={styles.detailText}>Status: {selectedServico.status}</Text>
-            <Text style={styles.detailText}>
-              Data de Criação: {new Date(selectedServico.dataCriacao).toLocaleDateString()}
-            </Text>
-            <Text style={styles.detailText}>
-              Data de Agendamento:{' '}
-              {selectedServico.dataAgendamento
-                ? new Date(selectedServico.dataAgendamento).toLocaleDateString()
-                : 'Não definida'}
-            </Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
-                <Text style={styles.buttonText}>Entrar em Contato</Text>
-              </TouchableOpacity>
-              {selectedServico.status === 'aberto' && (
-                <>
-                  <TouchableOpacity style={styles.acceptButton} onPress={handleAceitar}>
-                    <Text style={styles.buttonText}>Aceitar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.rejectButton} onPress={handleRecusar}>
-                    <Text style={styles.buttonText}>Recusar</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          </View>
-        ) : (
-          servicos.length > 0 ? (
-            servicos.map((servico) => (
-              <TouchableOpacity
-                key={servico._id}
-                style={styles.card}
-                onPress={() => handleSelectServico(servico)}
-              >
-                <AntDesign name="enviromento" size={24} color="black" />
-                <View style={styles.cardContent}>
-                  <Text style={styles.cardTitle}>
-                    Origem: {servico.origem.cidade}, {servico.origem.estado}
-                  </Text>
-                  <Text style={styles.cardTitle}>
-                    Destino: {servico.destino.cidade}, {servico.destino.estado}
-                  </Text>
-                  <Text style={styles.cardPrice}>R$ {servico.preco.toFixed(2)}</Text>
-                </View>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={styles.noServicos}>Nenhum serviço disponível</Text>
-          )
+    <ScrollView style={styles.container}>
+      <Text style={styles.label}>PREENCHA OS CAMPOS ABAIXO</Text>
+
+      <Text style={styles.label}>Origem</Text>
+      <Controller
+        control={control}
+        name="cidadeOrigem"
+        rules={{ required: 'Cidade de origem é obrigatória' }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.cidadeOrigem && styles.inputError]}
+            placeholder="Cidade"
+            value={value}
+            onChangeText={onChange}
+          />
         )}
-      </ScrollView>
-      <Rodape />
-    </SafeAreaView>
+      />
+      {errors.cidadeOrigem && <Text style={styles.error}>{errors.cidadeOrigem.message}</Text>}
+
+      <Controller
+        control={control}
+        name="estadoOrigem"
+        rules={{ required: 'Estado de origem é obrigatório' }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.estadoOrigem && styles.inputError]}
+            placeholder="Estado (ex.: SP)"
+            value={value}
+            onChangeText={onChange}
+          />
+        )}
+      />
+      {errors.estadoOrigem && <Text style={styles.error}>{errors.estadoOrigem.message}</Text>}
+
+      <Controller
+        control={control}
+        name="enderecoOrigem"
+        rules={{ required: 'Endereço de origem é obrigatório' }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.enderecoOrigem && styles.inputError]}
+            placeholder="Rua, numero, bairro, complemento"
+            value={value}
+            onChangeText={onChange}
+          />
+        )}
+      />
+      {errors.enderecoOrigem && <Text style={styles.error}>{errors.enderecoOrigem.message}</Text>}
+
+      <Text style={styles.label}>Destino</Text>
+      <Controller
+        control={control}
+        name="cidadeDestino"
+        rules={{ required: 'Cidade de destino é obrigatória' }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.cidadeDestino && styles.inputError]}
+            placeholder="Cidade"
+            value={value}
+            onChangeText={onChange}
+          />
+        )}
+      />
+      {errors.cidadeDestino && <Text style={styles.error}>{errors.cidadeDestino.message}</Text>}
+
+      <Controller
+        control={control}
+        name="estadoDestino"
+        rules={{ required: 'Estado de destino é obrigatório' }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.estadoDestino && styles.inputError]}
+            placeholder="Estado (ex.: RJ)"
+            value={value}
+            onChangeText={onChange}
+          />
+        )}
+      />
+      {errors.estadoDestino && <Text style={styles.error}>{errors.estadoDestino.message}</Text>}
+
+      <Controller
+        control={control}
+        name="enderecoDestino"
+        rules={{ required: 'Endereço de destino é obrigatório' }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.enderecoDestino && styles.inputError]}
+            placeholder="Rua, numero, bairro, complemento"
+            value={value}
+            onChangeText={onChange}
+          />
+        )}
+      />
+      {errors.enderecoDestino && <Text style={styles.error}>{errors.enderecoDestino.message}</Text>}
+
+      <Text style={styles.label}>Tipo de Carga</Text>
+      <Controller
+        control={control}
+        name="tipoCarga"
+        rules={{ required: 'Tipo de carga é obrigatório' }}
+        render={({ field: { onChange, value } }) => (
+          <View style={[styles.pickerContainer, errors.tipoCarga && styles.inputError]}>
+            <Picker
+              selectedValue={value}
+              onValueChange={onChange}
+              style={styles.picker}
+            >
+              <Picker.Item label="Selecione" value="" />
+              <Picker.Item label="Mudança" value="mudanca" />
+              <Picker.Item label="Entrega" value="entrega" />
+              <Picker.Item label="Outro" value="outro" />
+            </Picker>
+          </View>
+        )}
+      />
+      {errors.tipoCarga && <Text style={styles.error}>{errors.tipoCarga.message}</Text>}
+
+      <Text style={styles.label}>Peso Estimado (opcional)</Text>
+      <Controller
+        control={control}
+        name="pesoEstimado"
+        rules={{
+          pattern: { value: /^\d+$/, message: 'Digite apenas números' },
+        }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.pesoEstimado && styles.inputError]}
+            placeholder="Peso em kg"
+            value={value}
+            onChangeText={onChange}
+            keyboardType="numeric"
+          />
+        )}
+      />
+      {errors.pesoEstimado && <Text style={styles.error}>{errors.pesoEstimado.message}</Text>}
+
+      <Text style={styles.label}>Valor (opcional)</Text>
+      <Controller
+        control={control}
+        name="preco"
+        rules={{
+          pattern: { value: /^\d+(\.\d{1,2})?$/, message: 'Digite um valor válido (ex.: 500.00)' },
+        }}
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            style={[styles.input, errors.preco && styles.inputError]}
+            placeholder="Preço em reais"
+            value={value}
+            onChangeText={onChange}
+            keyboardType="numeric"
+          />
+        )}
+      />
+      {errors.preco && <Text style={styles.error}>{errors.preco.message}</Text>}
+
+      <Text style={styles.label}>Data de Agendamento (opcional)</Text>
+        <Controller
+        control={control}
+        name="dataAgendamento"
+        render={({ field: { onChange, value } }) => {
+            const [showPicker, setShowPicker] = useState(false);
+
+            const handleDateChange = (event, selectedDate) => {
+            setShowPicker(Platform.OS === 'ios'); // Mantém picker aberto no iOS
+            if (selectedDate) {
+                onChange(selectedDate.toISOString()); // Envia data em formato ISO
+            } else {
+                onChange(undefined); // Permite limpar a data
+            }
+            };
+
+            return (
+            <View>
+                <TouchableOpacity
+                style={[styles.input, { justifyContent: 'center' }]}
+                onPress={() => setShowPicker(true)}
+                >
+                <Text style={styles.dateText}>
+                    {value ? new Date(value).toLocaleDateString('pt-BR') : 'Selecione uma data'}
+                </Text>
+                </TouchableOpacity>
+                {showPicker && (
+                <DateTimePicker
+                    value={value ? new Date(value) : new Date()}
+                    mode="date"
+                    display={Platform.OS === 'android' ? 'calendar' : 'inline'}
+                    onChange={handleDateChange}
+                    minimumDate={new Date()} // Impede datas passadas
+                />
+                )}
+            </View>
+            );
+        }}
+        />
+
+      <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+        <Text style={styles.buttonText}>Publicar Serviço</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContent: {
     padding: 20,
+    backgroundColor: '#f5f5f5',
   },
-  header: {
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-  },
-  controlsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 20,
-  },
-  filterPlaceholder: {
-    flex: 1,
-    marginRight: 10,
-  },
-  refreshButton: {
-    flexDirection: 'row',
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-  },
-  refreshButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 5,
-  },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    alignItems: 'center',
-  },
-  cardContent: {
-    flex: 1,
-    marginLeft: 15,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    textAlign: 'center',
     color: '#333',
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 10,
     marginBottom: 5,
-  },
-  cardPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#007AFF',
-  },
-  detailCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  detailTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
     color: '#333',
-    marginBottom: 15,
   },
-  detailText: {
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
     fontSize: 16,
-    color: '#333',
+    backgroundColor: '#fff',
     marginBottom: 10,
   },
-  closeButton: {
-    alignSelf: 'flex-end',
-    padding: 5,
+  inputError: {
+    borderColor: 'red',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    marginBottom: 10,
   },
-  contactButton: {
+  picker: {
+    height: 50,
+    width: '100%',
+  },
+  error: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  button: {
     backgroundColor: '#007AFF',
+    padding: 15,
     borderRadius: 5,
-    padding: 10,
-    flex: 1,
-    marginRight: 10,
     alignItems: 'center',
-  },
-  acceptButton: {
-    backgroundColor: '#34C759',
-    borderRadius: 5,
-    padding: 10,
-    flex: 1,
-    marginRight: 10,
-    alignItems: 'center',
-  },
-  rejectButton: {
-    backgroundColor: '#FF3B30',
-    borderRadius: 5,
-    padding: 10,
-    flex: 1,
-    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 30,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  noServicos: {
+  dateText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: '#333',
   },
 });
 
-export default ServicosDisponiveis;
+export default PostarServico;
