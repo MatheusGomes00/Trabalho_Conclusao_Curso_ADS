@@ -1,11 +1,19 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 const Cabecalho = () => {
-  const handleLogout = () => {
-    // Placeholder para logout (será implementado depois)
-    console.log('Logout clicado');
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear(); 
+      router.replace('/');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
   };
 
   return (
