@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Cabecalho from '../components/Cabecalho';
@@ -15,6 +15,11 @@ const Motorista = () => {
   const handleConsultarHistorico = () => {
     router.push('/historicoMotora');
   }
+
+  const handleContactar = () => {
+        console.log('Entrar em contato: ...');
+        Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
+    };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -35,7 +40,7 @@ const Motorista = () => {
         </TouchableOpacity>
 
         {/* Card: Chat */}
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={handleContactar}>
           <Ionicons name="chatbubbles" size={40} color="#007AFF" />
           <Text style={styles.cardTitle}>Chat</Text>
           <Text style={styles.cardSubtitle}>Converse com clientes</Text>

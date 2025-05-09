@@ -144,14 +144,18 @@ const ServicosDisponiveis = () => {
             </TouchableOpacity>
             <Text style={styles.detailTitle}>Detalhes do Serviço</Text>
             <Text style={styles.detailText}>
-              Origem: {selectedServico.origem.cidade}, {selectedServico.origem.estado}
+              Origem: {selectedServico.origem.endereco}, {selectedServico.origem.cidade}, {selectedServico.origem.estado}
             </Text>
             <Text style={styles.detailText}>
-              Destino: {selectedServico.destino.cidade}, {selectedServico.destino.estado}
+              Destino: {selectedServico.destino.endereco}, {selectedServico.destino.cidade}, {selectedServico.destino.estado}
             </Text>
             <Text style={styles.detailText}>Tipo de Carga: {selectedServico.tipoCarga}</Text>
-            <Text style={styles.detailText}>Peso Estimado: {selectedServico.pesoEstimado} kg</Text>
-            <Text style={styles.detailText}>Preço: R$ {selectedServico.preco.toFixed(2)}</Text>
+            <Text style={styles.detailText}>
+              Peso Estimado: {selectedServico.pesoEstimado ? `${selectedServico.pesoEstimado} kg` : 'Não definido'}
+            </Text>
+            <Text style={styles.detailText}>
+              Preço: {selectedServico.preco ? `R$ ${selectedServico.preco.toFixed(2)}` : 'Combinar'}
+            </Text>
             <Text style={styles.detailText}>Status: {selectedServico.status}</Text>
             <Text style={styles.detailText}>
               Data de Criação: {new Date(selectedServico.dataCriacao).toLocaleDateString()}
@@ -189,12 +193,14 @@ const ServicosDisponiveis = () => {
                 <AntDesign name="enviromento" size={24} color="black" />
                 <View style={styles.cardContent}>
                   <Text style={styles.cardTitle}>
-                    Origem: {servico.origem.cidade}, {servico.origem.estado}
+                    Origem: {servico.origem.endereco}, {servico.origem.cidade}, {servico.origem.estado}
                   </Text>
                   <Text style={styles.cardTitle}>
-                    Destino: {servico.destino.cidade}, {servico.destino.estado}
+                    Destino: {servico.destino.endereco}, {servico.destino.cidade}, {servico.destino.estado}
                   </Text>
-                  <Text style={styles.cardPrice}>R$ {servico.preco.toFixed(2)}</Text>
+                  <Text style={styles.cardPrice}>
+                    Preço: {servico.preco ? `R$ ${servico.preco.toFixed(2)}` : 'Combinar'}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))
@@ -276,7 +282,7 @@ const styles = StyleSheet.create({
   cardPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#333',
   },
   detailCard: {
     backgroundColor: '#FFFFFF',
