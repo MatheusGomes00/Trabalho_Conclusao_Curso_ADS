@@ -14,7 +14,8 @@ export const listarServicos = async (req, res) => {
       }).populate('cliente', 'nome email');
     } else if (tipo === 'cliente') {
       servicos = await Servico.find({ cliente: id })
-        .populate('motorista', 'nome email');
+        .populate('cliente', 'nome email telefone')
+        .populate('motorista', 'nome email telefone')
     } else {
       return res.status(403).json({ erro: 'Tipo de usuário inválido' });
     }

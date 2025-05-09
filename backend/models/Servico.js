@@ -28,11 +28,11 @@ const servicoSchema = new Schema({
   },
   pesoEstimado: {
     type: Number,
-    required: true,
+    required: false,
   },
   preco: {
     type: Number,
-    required: true,
+    required: false,
   },
   status: {
     type: String,
