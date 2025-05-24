@@ -54,7 +54,3 @@ git rm --cached ifreto/package-lock.json
 
 
 
-
-
-
-
