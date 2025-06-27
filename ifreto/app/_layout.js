@@ -66,6 +66,13 @@ export default function Layout() {
           headerBackVisible: false,
         }}
       />
+      <Stack.Screen
+        name="contatos"
+        options={{
+          title: 'Contatos',
+          headerBackVisible: true,
+        }}
+      />
       
     </Stack>
   );

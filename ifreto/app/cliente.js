@@ -17,8 +17,7 @@ const Cliente = () => {
   }
 
   const handleContactar = () => {
-      console.log('Entrar em contato: ...');
-      Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
+    router.push('/contatos');
   };
 
   return (

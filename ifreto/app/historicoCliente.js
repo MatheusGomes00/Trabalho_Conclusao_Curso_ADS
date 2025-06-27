@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -204,15 +204,16 @@ const HistoricoCliente = () => {
                 : 'Não concluído'}
             </Text>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
-                <Text style={styles.buttonText}>Entrar em Contato</Text>
-              </TouchableOpacity>
               {(selectedServico.status === 'aberto' || selectedServico.status === 'aceito') && (
                 <TouchableOpacity style={styles.cancelButton} onPress={handleCancelarPub}>
                   <Text style={styles.buttonText}>Cancelar Serviço</Text>
                 </TouchableOpacity>
               )}
             </View>
+            <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
+                <FontAwesome name="whatsapp" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Conversar pelo WhatsApp</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           filtrarServicos().length > 0 ? (
@@ -347,14 +348,20 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   contactButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-    padding: 10,
-    flex: 1,
-    marginRight: 10,
-    marginBottom: 10,
+    flexDirection: 'row',
     alignItems: 'center',
-    minWidth: 120,
+    justifyContent: 'center',
+    backgroundColor: '#25D366', // cor oficial do WhatsApp
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginTop: 10,
+    gap: 8, 
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   cancelButton: {
     backgroundColor: '#FF3B30', // Fundo vermelho visível
@@ -391,11 +398,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 10,
     alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
   noServicos: {
     fontSize: 16,

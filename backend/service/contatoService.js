@@ -92,7 +92,51 @@ export const iniciarContato = async (req, res) => {
   }
 };
 
+const buscarContatosDoUsuario = async (usuarioId, tipoUsuario) => {
+  const filtro =
+    tipoUsuario === 'cliente'
+      ? { cliente: usuarioId }
+      : { motorista: usuarioId };
+
+  const contatos = await Contato.find(filtro)
+    .populate('servico')
+    .populate('cliente', '_id nome email telefone')
+    .populate('motorista', '_id nome email telefone')
+    .sort({ dataContato: -1 });
+
+  // Mapeia para destacar apenas os dados relevantes
+  return contatos.map((contato) => {
+    const outroUsuario =
+      tipoUsuario === 'cliente' ? contato.motorista : contato.cliente;
+
+    return {
+      contatoId: contato._id,
+      dataContato: contato.dataContato,
+      servico: contato.servico,
+      outroUsuario: {
+        _id: outroUsuario?._id,
+        nome: outroUsuario?.nome,
+        email: outroUsuario?.email,
+        telefone: outroUsuario?.telefone,
+      },
+    };
+  });
+};
+
+export const listarContatos = async (req, res) => {
+  try {
+    const { id, tipo } = req.user;
+
+    const contatos = await buscarContatosDoUsuario(id, tipo);
+
+    res.json(contatos);
+  } catch (err) {
+    console.error('Erro ao listar contatos:', err);
+    res.status(500).json({ erro: 'Erro ao listar contatos' });
+  }
+};
 
 export default {
-  iniciarContato
+  iniciarContato,
+  listarContatos
 };

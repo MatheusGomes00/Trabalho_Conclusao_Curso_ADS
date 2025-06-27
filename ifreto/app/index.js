@@ -20,7 +20,6 @@ const LoginScreen = () => {
         senha: data.senha,
       });
       await AsyncStorage.setItem('token', response.data.token);
-      Alert.alert('Sucesso', 'Login bem-sucedido!');
       router.replace('/home');
     } catch (error) {
       let errorMessage = 'Erro ao fazer login';
