@@ -94,3 +94,4 @@ export const loginUsuario = async (req, res) => {
     res.status(500).json({ erro: 'Erro ao fazer login' });
   }
 };
+
