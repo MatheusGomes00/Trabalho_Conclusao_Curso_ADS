@@ -26,7 +26,9 @@ const ServicosDisponiveis = () => {
         return;
       }
 
-      const response = await axios.get(`${API_URL}/api/servicos/buscar`, {
+      const context = "disponiveis"
+
+      const response = await axios.get(`${API_URL}/api/servicos/buscar/${context}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -52,8 +54,6 @@ const ServicosDisponiveis = () => {
     fetchServicos();
   };
 
-
-
   const handleSelectServico = (servico) => {
     setSelectedServico(servico);
   };
@@ -62,16 +62,10 @@ const ServicosDisponiveis = () => {
     setSelectedServico(null);
   };
 
-  const handleContactar = () => {
-    // Placeholder para chat
-    console.log('Entrar em contato:', selectedServico?._id);
-    Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
-  };
-
   const handleAceitar = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/api/servicos/${selectedServico._id}/aceitar`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
@@ -95,7 +89,7 @@ const ServicosDisponiveis = () => {
   const handleRecusar = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
+      await axios.post(
         `${API_URL}/api/servicos/${selectedServico._id}/rejeitar`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
@@ -167,9 +161,6 @@ const ServicosDisponiveis = () => {
                 : 'Não definida'}
             </Text>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
-                <Text style={styles.buttonText}>Entrar em Contato</Text>
-              </TouchableOpacity>
               {selectedServico.status === 'aberto' && (
                 <>
                   <TouchableOpacity style={styles.acceptButton} onPress={handleAceitar}>
@@ -211,8 +202,10 @@ const ServicosDisponiveis = () => {
       </ScrollView>
       <Rodape />
     </SafeAreaView>
+    
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

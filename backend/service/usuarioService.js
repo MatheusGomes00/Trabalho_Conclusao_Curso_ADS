@@ -54,12 +54,7 @@ export const cadastrarUsuario = async (req, res) => {
 
     // Criar usuário
     const usuario = new Usuario({
-      nome,
-      email,
-      senha: senhaHash,
-      tipo,
-      telefone,
-      endereco,
+      nome, email, senha: senhaHash, tipo, telefone, endereco,
       motoristaDetalhes: tipo === 'motorista' ? motoristaDetalhes : undefined,
     });
 

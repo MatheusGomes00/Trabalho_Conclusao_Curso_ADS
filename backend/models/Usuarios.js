@@ -1,36 +1,35 @@
 import { Schema, model } from 'mongoose';
 
 const usuarioSchema = new Schema({
-  nome: {
-    type: String,
+  nome: { 
+    type: String, 
     required: true,
-    trim: true,
+    trim: true, 
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true,
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    lowercase: true, 
+    trim: true, 
   },
-  senha: {
-    type: String,
-    required: true,
+  senha: { 
+    type: String, 
+    required: true, 
   },
-  tipo: {
-    type: String,
-    enum: ['motorista', 'cliente'],
-    required: true,
+  tipo: { 
+    type: String, 
+    enum: ['motorista', 'cliente'], 
+    required: true, },
+  telefone: { 
+    type: String, 
+    required: true, 
   },
-  telefone: {
-    type: String,
-    required: true,
+  endereco: { 
+    cidade: String, 
+    estado: String, 
   },
-  endereco: {
-    cidade: String,
-    estado: String,
-  },
-  motoristaDetalhes: {
+  motoristaDetalhes: { 
     cnh: {
       type: String,
       required: function() { return this.tipo === 'motorista'; },

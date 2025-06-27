@@ -3,19 +3,34 @@ import Servico from '../models/Servico.js';
 export const listarServicos = async (req, res) => {
   try {
     const { tipo, id } = req.user;
+    const context = req.params.context
+
     let servicos;
 
     if (tipo === 'motorista') {
-      servicos = await Servico.find({
-        $or: [
-          { status: 'aberto', motorista: null, rejeitadoPor: { $nin: [id] } },
-          { status: { $in: ['aceito', 'em andamento', 'concluido'] }, motorista: id },
-        ],
-      }).populate('cliente', 'nome email');
+      if (context === 'disponiveis') {
+        // serviços abertos para motorista aceitar
+        servicos = await Servico.find({
+          status: 'aberto',
+          motorista: null,
+          rejeitadoPor: { $nin: [id] },
+        }).populate('cliente', '_id nome email telefone');
+      } else if (context === 'historico') {
+        // histórico: serviços aceitos ou em andamento ou concluídos
+        servicos = await Servico.find({
+          status: { $in: ['aceito', 'em andamento', 'concluido'] },
+          motorista: id,
+        }).populate('cliente', '_id nome email telefone')
+          .populate('motorista', '_id nome email telefone');
+      } else {
+        // fallback, pode listar todos ou retornar erro
+        return res.status(400).json({ erro: 'Contexto inválido' });
+      }
     } else if (tipo === 'cliente') {
+      // histórico do cliente (pode aproveitar mesmo filtro, sem contexto)
       servicos = await Servico.find({ cliente: id })
-        .populate('cliente', 'nome email telefone')
-        .populate('motorista', 'nome email telefone')
+        .populate('cliente', '_id nome email telefone')
+        .populate('motorista', '_id nome email telefone');
     } else {
       return res.status(403).json({ erro: 'Tipo de usuário inválido' });
     }
@@ -25,6 +40,7 @@ export const listarServicos = async (req, res) => {
     res.status(500).json({ erro: 'Erro ao listar serviços' });
   }
 };
+
 
 export const criarServico = async (req, res) => {
   const { tipo } = req.user;

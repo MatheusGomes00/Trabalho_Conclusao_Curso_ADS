@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import usuarioRoutes from './routes/usuarios.js';
 import servicoRoutes from './routes/servicos.js';
+import contatoRoutes from './routes/contato.js'
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ mongoose.connect('mongodb://localhost:27017/fretes', {
 
 app.use('/api/user', usuarioRoutes);
 app.use('/api/servicos', servicoRoutes);
+app.use('/api/contato', contatoRoutes)
 
 app.get('/', (req, res) => res.send('API rodando'));
 

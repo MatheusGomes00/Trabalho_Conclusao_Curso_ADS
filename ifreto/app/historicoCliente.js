@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import * as Linking from 'expo-linking'
 import { Picker } from '@react-native-picker/picker';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
@@ -26,11 +27,13 @@ const HistoricoCliente = () => {
           return;
         }
 
-        const response = await axios.get(`${API_URL}/api/servicos/buscar`, {
+        const context = "historico"
+
+        const response = await axios.get(`${API_URL}/api/servicos/buscar/${context}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setServicos(response.data); // Corrigido: response.data
+        setServicos(response.data);
       } catch (error) {
         const errorMessage = error.response?.data?.erro || 'Erro ao carregar histórico';
         Alert.alert('Erro', errorMessage);
@@ -51,9 +54,47 @@ const HistoricoCliente = () => {
     setSelectedServico(null);
   };
 
-  const handleContactar = () => {
-    console.log('Entrar em contato:', selectedServico?._id);
-    Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
+  const handleContactar = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+
+      if (!selectedServico) {
+        Alert.alert('Erro', 'Nenhum serviço selecionado.');
+        return;
+      }
+
+      if (!selectedServico.cliente?._id || !selectedServico.motorista?._id) {
+        Alert.alert('Erro', 'Dados do cliente ou motorista não disponíveis.');
+        return;
+      }
+
+      const iniciadorId = selectedServico.cliente._id;
+      const receptorId = selectedServico.motorista._id;
+      const tipoIniciador = 'cliente';
+
+      const response = await axios.post(
+        `${API_URL}/api/contato/iniciarchat`,
+        {
+          iniciadorId,
+          receptorId,
+          servicoId: selectedServico._id,
+          tipoIniciador
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { linkWhatsApp } = response.data;
+
+      if (linkWhatsApp) {
+        Linking.openURL(linkWhatsApp);
+      } else {
+        Alert.alert('Erro', 'Link do WhatsApp não recebido.');
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.erro || 'Erro ao iniciar contato';
+      Alert.alert('Erro', errorMessage);
+      console.error('Erro ao iniciar contato:', error);
+    }
   };
 
   const handleCancelarPub = async () => {

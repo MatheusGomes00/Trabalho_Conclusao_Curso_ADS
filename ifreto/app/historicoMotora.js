@@ -5,6 +5,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
+import * as Linking from 'expo-linking'
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
@@ -26,7 +27,9 @@ const Historico = () => {
           return;
         }
 
-        const response = await axios.get(`${API_URL}/api/servicos/buscar`, {
+        const context = "historico"
+
+        const response = await axios.get(`${API_URL}/api/servicos/buscar/${context}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -55,10 +58,47 @@ const Historico = () => {
     setSelectedServico(null);
   };
 
-  const handleContactar = () => {
-    // Placeholder para chat
-    console.log('Entrar em contato:', selectedServico?._id);
-    Alert.alert('Info', 'Funcionalidade de chat será implementada em breve');
+  const handleContactar = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+
+      // Verifica se o serviço está selecionado e se cliente e motorista existem
+      if (!selectedServico) {
+        Alert.alert('Erro', 'Nenhum serviço selecionado.');
+        return;
+      }
+      if (!selectedServico.cliente?._id || !selectedServico.motorista?._id) {
+        Alert.alert('Erro', 'Dados do cliente ou motorista não disponíveis.');
+        return;
+      }
+
+      const iniciadorId = selectedServico.motorista._id;
+      const receptorId = selectedServico.cliente._id;
+      const tipoIniciador = 'motorista';
+
+      const response = await axios.post(
+        `${API_URL}/api/contato/iniciarchat`,
+        {
+          iniciadorId,
+          receptorId,
+          servicoId: selectedServico._id,
+          tipoIniciador
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { linkWhatsApp } = response.data;
+
+      if (linkWhatsApp) {
+        Linking.openURL(linkWhatsApp);
+      } else {
+        Alert.alert('Erro', 'Link do WhatsApp não recebido.');
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.erro || 'Erro ao iniciar contato';
+      Alert.alert('Erro', errorMessage);
+      console.error('Erro ao iniciar contato:', error);
+    }
   };
 
   const handleIniciar = async () => {

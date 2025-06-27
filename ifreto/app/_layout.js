@@ -56,7 +56,7 @@ export default function Layout() {
         name="historicoCliente"
         options={{
           title: 'Historico de Serviços',
-          headerBackVisible: false,
+          headerBackVisible: true,
         }}
       />
       <Stack.Screen
