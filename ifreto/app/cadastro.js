@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import axios from 'axios';
@@ -51,7 +51,7 @@ const CadastroScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <ScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Cadastro</Text>
 
@@ -63,6 +63,7 @@ const CadastroScreen = () => {
             <TextInput
               style={[styles.input, errors.nome && styles.inputError]}
               placeholder="Nome"
+              placeholderTextColor="#999"
               value={value}
               onChangeText={onChange}
             />
@@ -78,6 +79,7 @@ const CadastroScreen = () => {
             <TextInput
               style={[styles.input, errors.email && styles.inputError]}
               placeholder="E-mail"
+              placeholderTextColor="#999"
               value={value}
               onChangeText={onChange}
               keyboardType="email-address"
@@ -95,6 +97,7 @@ const CadastroScreen = () => {
             <TextInput
               style={[styles.input, errors.senha && styles.inputError]}
               placeholder="Senha"
+              placeholderTextColor="#999"
               value={value}
               onChangeText={onChange}
               secureTextEntry
@@ -108,15 +111,17 @@ const CadastroScreen = () => {
           name="tipo"
           rules={{ required: 'Tipo é obrigatório' }}
           render={({ field: { onChange, value } }) => (
-            <Picker
-              selectedValue={value}
-              onValueChange={onChange}
-              style={[styles.input, errors.tipo && styles.inputError]}
-            >
-              <Picker.Item label="Selecione o tipo" value="" />
-              <Picker.Item label="Motorista" value="motorista" />
-              <Picker.Item label="Cliente" value="cliente" />
-            </Picker>
+            <View style={[styles.pickerContainer, errors.tipo && styles.inputError]}>
+              <Picker
+                selectedValue={value}
+                onValueChange={onChange}
+                style={styles.picker}
+              >
+                <Picker.Item label="Selecione o tipo" value="" />
+                <Picker.Item label="Motorista" value="motorista" />
+                <Picker.Item label="Cliente" value="cliente" />
+              </Picker>
+            </View>
           )}
         />
         {errors.tipo && <Text style={styles.error}>{errors.tipo.message}</Text>}
@@ -129,6 +134,7 @@ const CadastroScreen = () => {
             <TextInput
               style={[styles.input, errors.telefone && styles.inputError]}
               placeholder="Telefone (ex.: +5511999999999)"
+              placeholderTextColor="#999"
               value={value}
               onChangeText={onChange}
               keyboardType="phone-pad"
@@ -144,6 +150,7 @@ const CadastroScreen = () => {
             <TextInput
               style={styles.input}
               placeholder="Cidade (opcional)"
+              placeholderTextColor="#999"
               value={value}
               onChangeText={onChange}
             />
@@ -157,6 +164,7 @@ const CadastroScreen = () => {
             <TextInput
               style={styles.input}
               placeholder="Estado (opcional)"
+              placeholderTextColor="#999"
               value={value}
               onChangeText={onChange}
             />
@@ -173,6 +181,7 @@ const CadastroScreen = () => {
                 <TextInput
                   style={[styles.input, errors.cnh && styles.inputError]}
                   placeholder="CNH"
+                  placeholderTextColor="#999"
                   value={value}
                   onChangeText={onChange}
                 />
@@ -185,26 +194,30 @@ const CadastroScreen = () => {
               name="tipoVeiculo"
               rules={{ required: 'Tipo de veículo é obrigatório' }}
               render={({ field: { onChange, value } }) => (
-                <Picker
-                  selectedValue={value}
-                  onValueChange={onChange}
-                  style={[styles.input, errors.tipoVeiculo && styles.inputError]}
-                >
-                  <Picker.Item label="Selecione o veículo" value="" />
-                  <Picker.Item label="Caminhonete" value="caminhonete" />
-                  <Picker.Item label="Van" value="van" />
-                  <Picker.Item label="Caminhão" value="caminhao" />
-                  <Picker.Item label="Outro" value="outro" />
-                </Picker>
+                <View style={[styles.pickerContainer, errors.tipoVeiculo && styles.inputError]}>
+                  <Picker
+                    selectedValue={value}
+                    onValueChange={onChange}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Selecione o veículo" value="" />
+                    <Picker.Item label="Caminhonete" value="caminhonete" />
+                    <Picker.Item label="Van" value="van" />
+                    <Picker.Item label="Caminhão" value="caminhao" />
+                    <Picker.Item label="Outro" value="outro" />
+                  </Picker>
+                </View>
               )}
             />
             {errors.tipoVeiculo && <Text style={styles.error}>{errors.tipoVeiculo.message}</Text>}
           </>
         )}
-        <View style={styles.buttonContainer} >
-          <Button title={loading ? 'Carregando...' : 'Cadastrar'} onPress={handleSubmit(onSubmit)} disabled={loading} />
-        </View>
-        <Button title="Voltar ao Login" onPress={() => router.push('/')} color="#666" />
+        <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)} disabled={loading}>
+          <Text style={styles.buttonText}>{loading ? 'Carregando...' : 'Cadastrar'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.buttonSecondary]} onPress={() => router.push('/')} disabled={loading}>
+          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>Voltar ao Login</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -212,9 +225,6 @@ const CadastroScreen = () => {
 
 const styles = StyleSheet.create({
     buttonContainer: {
-      marginBottom: 10,
-    },
-    container: {
       flex: 1,
       backgroundColor: '#fff',
     },
@@ -231,9 +241,11 @@ const styles = StyleSheet.create({
     input: {
       borderWidth: 1,
       borderColor: '#ccc',
+      fontSize: 16,
       padding: 10,
       marginVertical: 10,
       borderRadius: 5,
+      backgroundColor: '#fff',
     },
     inputError: {
       borderColor: 'red',
@@ -241,6 +253,41 @@ const styles = StyleSheet.create({
     error: {
       color: 'red',
       marginBottom: 10,
+    },
+    pickerContainer: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      marginVertical: 10,
+      backgroundColor: '#fff',
+      overflow: 'hidden',
+      height: 50,
+      justifyContent: 'center',
+    },
+    picker: {
+      height: 50,
+      width: '100%',
+      color: '#000',
+      fontSize: 16,
+    },
+    button: {
+      backgroundColor: '#007AFF',
+      padding: 15,
+      borderRadius: 5,
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    buttonSecondary: {
+      backgroundColor: 'transparent',
+      marginTop: 10,
+    },
+    buttonTextSecondary: {
+      color: '#666',
     },
   });
 

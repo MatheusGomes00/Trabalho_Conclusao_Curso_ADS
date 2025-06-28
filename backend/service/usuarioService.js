@@ -95,3 +95,61 @@ export const loginUsuario = async (req, res) => {
   }
 };
 
+export const editarUsuario = async (req, res) => {
+  try {
+    const userId = req.user.id; // vindo do authMiddleware
+    const atualizacoes = req.body;
+
+    // Impede alteração de campos sensíveis
+    delete atualizacoes._id;
+    delete atualizacoes.senha;
+    delete atualizacoes.tipo;
+
+    const usuarioAtualizado = await Usuario.findByIdAndUpdate(
+      userId,
+      { $set: atualizacoes },
+      { new: true, runValidators: true }
+    ).select('-senha');
+
+    if (!usuarioAtualizado) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+
+    res.status(200).json({ mensagem: 'Dados atualizados com sucesso.', usuario: usuarioAtualizado });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao atualizar dados do usuário: ' + error.message });
+  }
+};
+
+export const excluirUsuario = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const usuario = await Usuario.findByIdAndDelete(userId);
+
+    // precisa excluir também a foto e cnh
+
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+
+    res.status(200).json({ mensagem: 'Conta excluída com sucesso.' });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao excluir conta: ' + error.message });
+  }
+};
+
+export const buscarPerfil = async (req, res) => {
+  try {
+    const userId = req.params.id
+
+    const usuario = await Usuario.findById(userId).select('-senha');
+    if (!usuario) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+
+    res.status(200).json(usuario);
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar perfil do usuário.' });
+  }
+};

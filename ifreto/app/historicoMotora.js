@@ -58,7 +58,7 @@ const Historico = () => {
     setSelectedServico(null);
   };
 
-  const handleContactar = async () => {
+  const handleContatar = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
 
@@ -261,7 +261,7 @@ const Historico = () => {
               )}
               
             </View>
-            <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
+            <TouchableOpacity style={styles.contactButton} onPress={handleContatar}>
               <FontAwesome name="whatsapp" size={20} color="#fff" />
               <Text style={styles.buttonText}>Conversar pelo WhatsApp</Text>
             </TouchableOpacity>

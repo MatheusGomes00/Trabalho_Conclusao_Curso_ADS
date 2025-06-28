@@ -73,7 +73,13 @@ export default function Layout() {
           headerBackVisible: true,
         }}
       />
-      
+      <Stack.Screen
+        name="perfil"
+        options={{
+          title: 'Cadastro',
+          headerBackVisible: true,
+        }}
+      />
     </Stack>
   );
 }

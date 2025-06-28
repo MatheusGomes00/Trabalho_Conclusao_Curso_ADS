@@ -68,6 +68,7 @@ const ListaContatos = () => {
     setSelectedContato(null);
   };
 
+  // este método será afetado quando um usuário tiver o seu perfil excluido, precisa de tratamento
   const handleConversar = (telefone, nome) => {
     const numero = telefone.replace(/\D/g, '').replace(/^55/, '');
     const link = `https://wa.me/55${numero}?text=Olá ${nome}, gostaria de falar sobre o frete!`;

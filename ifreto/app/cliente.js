@@ -20,6 +20,11 @@ const Cliente = () => {
     router.push('/contatos');
   };
 
+  const handleEditarCadastro = () => {
+    router.push('/perfil');
+  };
+  
+
   return (
     <SafeAreaView style={styles.container}>
       <Cabecalho />
@@ -43,6 +48,12 @@ const Cliente = () => {
           <Ionicons name="chatbubbles" size={40} color="#007AFF" />
           <Text style={styles.cardTitle}>Chat</Text>
           <Text style={styles.cardSubtitle}>Converse com motoristas</Text>
+        </TouchableOpacity>
+        {/* Card: Cadastro */}
+        <TouchableOpacity style={styles.card} onPress={handleEditarCadastro}>
+          <Ionicons name="person-outline" size={40} color="#007AFF" />
+          <Text style={styles.cardTitle}>Cadastro</Text>
+          <Text style={styles.cardSubtitle}>Edite seu cadastro</Text>
         </TouchableOpacity>
       </ScrollView>
       

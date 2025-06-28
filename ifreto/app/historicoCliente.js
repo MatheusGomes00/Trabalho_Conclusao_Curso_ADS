@@ -54,7 +54,8 @@ const HistoricoCliente = () => {
     setSelectedServico(null);
   };
 
-  const handleContactar = async () => {
+  // este método será afetado quando um usuário tiver o seu perfil excluido, precisa de tratamento
+  const handleContatar = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
 
@@ -83,7 +84,7 @@ const HistoricoCliente = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const { linkWhatsApp } = response.data;
+      const { linkWhatsApp } = response.data.linkWhatsApp;
 
       if (linkWhatsApp) {
         Linking.openURL(linkWhatsApp);
@@ -210,7 +211,7 @@ const HistoricoCliente = () => {
                 </TouchableOpacity>
               )}
             </View>
-            <TouchableOpacity style={styles.contactButton} onPress={handleContactar}>
+            <TouchableOpacity style={styles.contactButton} onPress={handleContatar}>
                 <FontAwesome name="whatsapp" size={20} color="#fff" />
                 <Text style={styles.buttonText}>Conversar pelo WhatsApp</Text>
             </TouchableOpacity>
