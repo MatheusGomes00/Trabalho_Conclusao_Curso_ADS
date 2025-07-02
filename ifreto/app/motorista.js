@@ -3,9 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
+import useSocket from '../services/useSocket';
 
 const Motorista = () => {
-
+  useSocket();
   const router = useRouter();
 
   const handleConsultarServicos = () => {
@@ -22,6 +23,10 @@ const Motorista = () => {
   
   const handleEditarCadastro = () => {
     router.push('/perfil');
+  };
+
+  const handleVerNotificacoes = () => {
+    router.push('/notificacoes');
   };
 
   return (
@@ -53,6 +58,12 @@ const Motorista = () => {
           <Ionicons name="person-outline" size={40} color="#007AFF" />
           <Text style={styles.cardTitle}>Cadastro</Text>
           <Text style={styles.cardSubtitle}>Edite seu cadastro</Text>
+        </TouchableOpacity>
+        {/* Card: Notificacoes */}
+        <TouchableOpacity style={styles.card} onPress={handleVerNotificacoes}>
+          <Ionicons name="notifications-outline" size={40} color="#007AFF" />
+          <Text style={styles.cardTitle}>Notificações</Text>
+          <Text style={styles.cardSubtitle}>Ver atualizações de serviços</Text>
         </TouchableOpacity>
       </ScrollView>
       

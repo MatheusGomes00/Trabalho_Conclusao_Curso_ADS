@@ -74,7 +74,7 @@ const ServicosDisponiveis = () => {
       Alert.alert('Sucesso', 'Serviço aceito com sucesso', [
         {
           text: 'OK',
-          onPress: () => router.push('/historicoMotora'),
+          onPress: () => router.replace('/historicoMotora'),
         },
       ]);
       setServicos(servicos.filter((s) => s._id !== selectedServico._id));

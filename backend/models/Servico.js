@@ -6,9 +6,17 @@ const servicoSchema = new Schema({
     ref: 'Usuario',
     required: true,
   },
+  clienteNome: {
+    type: String,
+    required: false,
+  },
   motorista: {
     type: Schema.Types.ObjectId,
     ref: 'Usuario',
+    default: null,
+  },
+  motoristaNome: {
+    type: String,
     default: null,
   },
   origem: {

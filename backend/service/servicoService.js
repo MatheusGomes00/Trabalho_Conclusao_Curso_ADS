@@ -1,4 +1,28 @@
 import Servico from '../models/Servico.js';
+import Usuarios from '../models/Usuarios.js'
+import { enviarNotificacao, notificarTodosMotoristas } from '../notification/websocket.js';
+
+export const obterNomesServico = async (servicoId) => {
+  try {
+    const servico = await Servico.findById(servicoId)
+      .populate('cliente', 'nome')
+      .populate('motorista', 'nome');
+    if (!servico) return null;
+    return {
+      clienteNome: servico.cliente ? servico.cliente.nome : null,
+      motoristaNome: servico.motorista ? servico.motorista.nome : null,
+    };
+  } catch (error) {
+    return null;
+  }
+};
+
+export const formatarEndereco = (local) => {
+  if (!local) return '';
+  const linha1 = [local.cidade, local.estado].filter(Boolean).join(' - ');
+  const linha2 = local.endereco || '';
+  return `${linha1}\n${linha2}`;
+}
 
 export const listarServicos = async (req, res) => {
   try {
@@ -41,7 +65,6 @@ export const listarServicos = async (req, res) => {
   }
 };
 
-
 export const criarServico = async (req, res) => {
   const { tipo } = req.user;
   if (tipo !== 'cliente') {
@@ -62,6 +85,18 @@ export const criarServico = async (req, res) => {
     });
 
     await servico.save();
+
+    const nome = await obterNomesServico(servico._id);
+    const clienteNome = nome && nome.clienteNome ? nome.clienteNome : 'cliente';
+    const origemFormatada = formatarEndereco(servico.origem);
+    const destinoFormatada = formatarEndereco(servico.destino);
+
+    notificarTodosMotoristas('novoServico', {
+      servicoId: servico._id,
+      novoStatus: servico.status,
+      mensagem: `${clienteNome} abriu uma nova ordem de serviço. \nOrigem: ${origemFormatada}\nDestino: ${destinoFormatada}`,
+    });
+
     res.status(201).json(servico);
   } catch (error) {
     res.status(400).json({ erro: 'Erro ao criar serviço: ' + error.message });
@@ -82,10 +117,27 @@ export const aceitarServico = async (req, res) => {
     if (servico.status !== 'aberto' || servico.motorista) {
       return res.status(400).json({ erro: 'Serviço não está disponível' });
     }
-
+    if (!servico.cliente) {
+      return res.status(500).json({ erro: 'Serviço inválido: cliente não encontrado' });
+    }
+    
+    let motorista = await Usuarios.findById(id);
+    if (!motorista) {
+      return res.status(404).json({ erro: 'Motorista não encontrado' });
+    }
+    servico.motoristaNome = motorista.nome;
     servico.motorista = id;
     servico.status = 'aceito';
     await servico.save();
+
+    const origemFormatada = formatarEndereco(servico.origem);
+    const destinoFormatada = formatarEndereco(servico.destino);
+
+    enviarNotificacao(servico.cliente.toString(), 'statusAtualizado', {
+      servicoId: servico._id,
+      novoStatus: servico.status,
+      mensagem: `${servico.motoristaNome} aceitou seu serviço. \nOrigem: ${origemFormatada}\nDestino: ${destinoFormatada}`,
+    });
 
     res.json(servico);
   } catch (error) {
@@ -149,6 +201,18 @@ export const iniciarServico = async (req, res) => {
     servico.status = 'em andamento';
     await servico.save();
 
+    const nome = await obterNomesServico(servico._id);
+    const motoristaNome = nome && nome.motoristaNome ? nome.motoristaNome : 'motorista';
+
+    const origemFormatada = formatarEndereco(servico.origem);
+    const destinoFormatada = formatarEndereco(servico.destino);
+
+    enviarNotificacao(servico.cliente.toString(), 'statusAtualizado', {
+      servicoId: servico._id,
+      novoStatus: servico.status,
+      mensagem: `${motoristaNome} iniciou o serviço. \nOrigem: ${origemFormatada}\nDestino: ${destinoFormatada}`,
+    });
+
     res.json(servico);
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao iniciar serviço' });
@@ -177,6 +241,17 @@ export const concluirServico = async (req, res) => {
     servico.dataConclusao = new Date();
     await servico.save();
 
+    const nome = await obterNomesServico(servico._id);
+    const motoristaNome = nome && nome.motoristaNome ? nome.motoristaNome : 'motorista';
+    const origemFormatada = formatarEndereco(servico.origem);
+    const destinoFormatada = formatarEndereco(servico.destino);
+
+    enviarNotificacao(servico.cliente.toString(), 'statusAtualizado', {
+      servicoId: servico._id,
+      novoStatus: servico.status,
+      mensagem: `${motoristaNome} alterou o status do serviço para concluído. \nOrigem: ${origemFormatada}\nDestino: ${destinoFormatada}`,
+    });
+
     res.json(servico);
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao concluir serviço' });
@@ -203,6 +278,17 @@ export const cancelarServico = async (req, res) => {
 
     servico.status = 'cancelado';
     await servico.save();
+
+    const nome = await obterNomesServico(servico._id);
+    const clienteNome = nome && nome.clienteNome ? nome.clienteNome : 'cliente';
+    const origemFormatada = formatarEndereco(servico.origem);
+    const destinoFormatada = formatarEndereco(servico.destino);
+
+    enviarNotificacao(servico.motorista.toString(), 'statusAtualizado', {
+      servicoId: servico._id,
+      novoStatus: servico.status,
+      mensagem: `${clienteNome} cancelou o serviço. \nOrigem: ${origemFormatada}\nDestino: ${destinoFormatada}`,
+    });
 
     res.json(servico);
   } catch (error) {

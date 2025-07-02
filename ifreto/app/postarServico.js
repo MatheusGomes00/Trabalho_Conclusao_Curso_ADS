@@ -44,7 +44,7 @@ const PostarServico = () => {
 
       Alert.alert('Sucesso', 'Serviço publicado com sucesso!');
       reset();
-      router.push('/historicoCliente');
+      router.replace('/historicoCliente');
     } catch (error) {
       console.error('Erro ao publicar serviço:', error.message, error.response?.data);
       Alert.alert('Erro', error.response?.data?.message || 'Falha ao publicar serviço.');

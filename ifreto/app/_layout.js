@@ -1,6 +1,15 @@
 import { Stack } from 'expo-router';
+import '../utils/notification/notificationConfig';
+import { useNotificationPermission } from '../utils/notification/useNotification';
+import { LogBox } from 'react-native';
 
 export default function Layout() {
+  useNotificationPermission();
+  LogBox.ignoreLogs([
+    'expo-notifications: Android Push notifications (remote notifications)',
+    '`expo-notifications` functionality is not fully supported in Expo Go',
+  ]);
+
   return (
     <Stack screenOptions={{ headerBackTitleVisible: false }}>
       <Stack.Screen
@@ -77,6 +86,13 @@ export default function Layout() {
         name="perfil"
         options={{
           title: 'Cadastro',
+          headerBackVisible: true,
+        }}
+      />
+      <Stack.Screen
+        name="notificacoes"
+        options={{
+          title: 'Notificações',
           headerBackVisible: true,
         }}
       />
