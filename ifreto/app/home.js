@@ -3,6 +3,8 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 const Home = () => {
   const router = useRouter();
@@ -21,7 +23,15 @@ const Home = () => {
         const tipo = decoded.tipo;
 
         if (tipo === 'motorista') {
+        // Verifica status dos documentos
+        const response = await axios.get(`${API_URL}/api/docs/status`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data.docsEnviados) {
           router.replace('/motorista');
+        } else {
+          router.replace('/uploadDocs');
+        }
         } else if (tipo === 'cliente') {
           router.replace('/cliente');
         } else {

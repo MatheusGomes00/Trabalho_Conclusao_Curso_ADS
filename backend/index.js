@@ -7,7 +7,8 @@ import { setupWebSocket } from './notification/websocket.js';
 import usuarioRoutes from './routes/usuarios.js';
 import servicoRoutes from './routes/servicos.js';
 import contatoRoutes from './routes/contato.js';
-import localizacaoRoutes from './routes/localizacao.js'; // ✅ Adicionado
+import localizacaoRoutes from './routes/localizacao.js';
+import docsRoutes from './routes/documentos.js';
 
 dotenv.config();
 
@@ -33,7 +34,8 @@ mongoose.connect('mongodb://localhost:27017/fretes', {
 app.use('/api/user', usuarioRoutes);
 app.use('/api/servicos', servicoRoutes);
 app.use('/api/contato', contatoRoutes);
-app.use('/api/localizacao', localizacaoRoutes); // ✅ Nova rota ativa
+app.use('/api/localizacao', localizacaoRoutes);
+app.use('/api/docs', docsRoutes)
 
 app.get('/', (req, res) => res.send('API rodando'));
 

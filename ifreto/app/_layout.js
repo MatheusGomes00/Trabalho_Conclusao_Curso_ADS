@@ -96,6 +96,13 @@ export default function Layout() {
           headerBackVisible: true,
         }}
       />
+      <Stack.Screen
+        name="uploadDocs"
+        options={{
+          title: 'Envio de Documentos',
+          headerBackVisible: false,
+        }}
+      />
     </Stack>
   );
 }

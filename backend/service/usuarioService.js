@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Joi from 'joi';
 import Usuario from '../models/Usuarios.js';
+import { criarDocSchemaParaMotorista } from './documentosService.js'
 
 // Esquema de validação para cadastro
 const cadastroSchema = Joi.object({
@@ -59,6 +60,10 @@ export const cadastrarUsuario = async (req, res) => {
     });
 
     await usuario.save();
+
+    if (tipo === 'motorista') {
+      await criarDocSchemaParaMotorista(usuario._id);
+    }
 
     // Gerar token JWT
     const token = jwt.sign({ id: usuario._id, tipo: usuario.tipo }, process.env.JWT_SECRET, { expiresIn: '1h' });

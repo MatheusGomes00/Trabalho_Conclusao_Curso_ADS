@@ -11,6 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.seudominio.ifreto",
       "infoPlist": {
+        "NSCameraUsageDescription": "Este app precisa acessar a câmera para capturar fotos dos documentos.",
         "NSLocationWhenInUseUsageDescription": "Este app usa sua localização para mostrar o mapa e a rota do frete."
       }
     },
@@ -21,6 +22,7 @@
       },
       "package": "com.seudominio.ifreto",
       "permissions": [
+        "CAMERA",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
       ]
@@ -39,6 +41,12 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permita $(PRODUCT_NAME) acessar sua camera"
         }
       ]
     ],
