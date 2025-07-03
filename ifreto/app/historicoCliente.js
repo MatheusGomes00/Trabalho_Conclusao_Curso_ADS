@@ -4,18 +4,19 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import * as Linking from 'expo-linking'
+import * as Linking from 'expo-linking';
 import { Picker } from '@react-native-picker/picker';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
-
+import MapaMotorista from '../components/MapaMotorista'; // Importação do mapa
 
 const HistoricoCliente = () => {
   const [servicos, setServicos] = useState([]);
   const [selectedServico, setSelectedServico] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState('todos');
+  const [mostrarMapa, setMostrarMapa] = useState(false); // Estado para mostrar mapa
 
   // Carregar histórico de serviços
   useEffect(() => {
@@ -27,7 +28,7 @@ const HistoricoCliente = () => {
           return;
         }
 
-        const context = "historico"
+        const context = "historico";
 
         const response = await axios.get(`${API_URL}/api/servicos/buscar/${context}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -48,10 +49,12 @@ const HistoricoCliente = () => {
 
   const handleSelectServico = (servico) => {
     setSelectedServico(servico);
+    setMostrarMapa(false); // Fecha o mapa ao trocar serviço
   };
 
   const handleCloseDetails = () => {
     setSelectedServico(null);
+    setMostrarMapa(false); // Fecha mapa ao fechar detalhes
   };
 
   // este método será afetado quando um usuário tiver o seu perfil excluido, precisa de tratamento
@@ -212,9 +215,27 @@ const HistoricoCliente = () => {
               )}
             </View>
             <TouchableOpacity style={styles.contactButton} onPress={handleContatar}>
-                <FontAwesome name="whatsapp" size={20} color="#fff" />
-                <Text style={styles.buttonText}>Conversar pelo WhatsApp</Text>
+              <FontAwesome name="whatsapp" size={20} color="#fff" />
+              <Text style={styles.buttonText}>Conversar pelo WhatsApp</Text>
             </TouchableOpacity>
+
+            {/* BOTÃO ACOMPANHAR ENVIO - etapa 7 */}
+            {selectedServico.status === 'em andamento' && (
+              <>
+                <TouchableOpacity
+                  style={styles.startButton}
+                  onPress={() => setMostrarMapa(!mostrarMapa)}
+                >
+                  <Text style={styles.buttonText}>
+                    {mostrarMapa ? 'Ocultar Mapa' : 'Acompanhar Envio'}
+                  </Text>
+                </TouchableOpacity>
+
+                {mostrarMapa && (
+                  <MapaMotorista servicoId={selectedServico._id} />
+                )}
+              </>
+            )}
           </View>
         ) : (
           filtrarServicos().length > 0 ? (
@@ -357,7 +378,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 12,
     marginTop: 10,
-    gap: 8, 
+    gap: 8,
   },
   buttonText: {
     color: '#fff',

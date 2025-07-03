@@ -9,6 +9,7 @@ import * as Linking from 'expo-linking'
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
+import * as Location from 'expo-location';
 
 
 const Historico = () => {
@@ -102,26 +103,45 @@ const Historico = () => {
   };
 
   const handleIniciar = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/servicos/${selectedServico._id}/iniciar`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  try {
+    const token = await AsyncStorage.getItem('token');
+    
+    // 1. Iniciar o frete
+    await axios.post(
+      `${API_URL}/api/servicos/${selectedServico._id}/iniciar`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      Alert.alert('Sucesso', 'Frete iniciado com sucesso');
-      setServicos(servicos.map((s) =>
-        s._id === selectedServico._id ? { ...s, status: 'em andamento' } : s
-      ));
-      setSelectedServico({ ...selectedServico, status: 'em andamento' });
-    } catch (error) {
-      const errorMessage = error.response?.data?.erro || 'Erro ao iniciar frete';
-      Alert.alert('Erro', errorMessage);
-      console.error('Erro ao iniciar frete:', error);
+    // 2. Obter localização atual do motorista
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão negada', 'É necessário permitir acesso à localização.');
+      return;
     }
-  };
 
+    const location = await Location.getCurrentPositionAsync({});
+    const { latitude, longitude } = location.coords;
+
+    // 3. Enviar localização inicial para o backend
+    await axios.post(
+      `${API_URL}/api/localizacao/${selectedServico._id}`,
+      { latitude, longitude },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // 4. Atualizar interface
+    Alert.alert('Sucesso', 'Frete iniciado com sucesso');
+    setServicos(servicos.map((s) =>
+      s._id === selectedServico._id ? { ...s, status: 'em andamento' } : s
+    ));
+    setSelectedServico({ ...selectedServico, status: 'em andamento' });
+  } catch (error) {
+    const errorMessage = error.response?.data?.erro || 'Erro ao iniciar frete';
+    Alert.alert('Erro', errorMessage);
+    console.error('Erro ao iniciar frete:', error);
+  }
+};
   const handleConcluir = async () => {
     try {
       const token = await AsyncStorage.getItem('token');

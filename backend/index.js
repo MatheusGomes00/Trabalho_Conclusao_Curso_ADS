@@ -7,6 +7,10 @@ import { setupWebSocket } from './notification/websocket.js';
 import usuarioRoutes from './routes/usuarios.js';
 import servicoRoutes from './routes/servicos.js';
 import contatoRoutes from './routes/contato.js'
+import usuarioRoutes from './routes/usuarios.js';
+import servicoRoutes from './routes/servicos.js';
+import contatoRoutes from './routes/contato.js';
+import localizacaoRoutes from './routes/localizacao.js'; // ✅ Adicionado
 
 dotenv.config();
 
@@ -27,11 +31,12 @@ mongoose.connect('mongodb://localhost:27017/fretes', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('Conectado ao MongoDB'))
-  .catch(err => console.error('Erro ao conectar ao MondoDB:', err));
+  .catch(err => console.error('Erro ao conectar:', err));
 
 app.use('/api/user', usuarioRoutes);
 app.use('/api/servicos', servicoRoutes);
-app.use('/api/contato', contatoRoutes)
+app.use('/api/contato', contatoRoutes);
+app.use('/api/localizacao', localizacaoRoutes); // ✅ Nova rota ativa
 
 app.get('/', (req, res) => res.send('API rodando'));
 

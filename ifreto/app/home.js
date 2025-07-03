@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { jwtDecode } from 'jwt-decode';
 
-
 const Home = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
