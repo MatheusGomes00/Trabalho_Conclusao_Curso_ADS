@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,14 +9,14 @@ import { Picker } from '@react-native-picker/picker';
 import Cabecalho from '../components/Cabecalho';
 import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
-import MapaMotorista from '../components/MapaMotorista'; // Importação do mapa
+import { useRouter } from 'expo-router';
 
 const HistoricoCliente = () => {
   const [servicos, setServicos] = useState([]);
   const [selectedServico, setSelectedServico] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState('todos');
-  const [mostrarMapa, setMostrarMapa] = useState(false); // Estado para mostrar mapa
+  const router = useRouter();
 
   // Carregar histórico de serviços
   useEffect(() => {
@@ -49,12 +49,10 @@ const HistoricoCliente = () => {
 
   const handleSelectServico = (servico) => {
     setSelectedServico(servico);
-    setMostrarMapa(false); // Fecha o mapa ao trocar serviço
   };
 
   const handleCloseDetails = () => {
     setSelectedServico(null);
-    setMostrarMapa(false); // Fecha mapa ao fechar detalhes
   };
 
   // este método será afetado quando um usuário tiver o seu perfil excluido, precisa de tratamento
@@ -221,20 +219,18 @@ const HistoricoCliente = () => {
 
             {/* BOTÃO ACOMPANHAR ENVIO - etapa 7 */}
             {selectedServico.status === 'em andamento' && (
-              <>
+              Platform.OS === 'web' ? (
+                <View style={[styles.startButton, { backgroundColor: '#ccc' }]}> 
+                  <Text style={styles.buttonText}>Acompanhamento de envio não disponível no navegador</Text>
+                </View>
+              ) : (
                 <TouchableOpacity
                   style={styles.startButton}
-                  onPress={() => setMostrarMapa(!mostrarMapa)}
+                  onPress={() => router.push(`/acompanharEnvio?servicoId=${selectedServico._id}`)}
                 >
-                  <Text style={styles.buttonText}>
-                    {mostrarMapa ? 'Ocultar Mapa' : 'Acompanhar Envio'}
-                  </Text>
+                  <Text style={styles.buttonText}>Acompanhar Envio</Text>
                 </TouchableOpacity>
-
-                {mostrarMapa && (
-                  <MapaMotorista servicoId={selectedServico._id} />
-                )}
-              </>
+              )
             )}
           </View>
         ) : (

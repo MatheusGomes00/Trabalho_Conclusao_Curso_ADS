@@ -6,9 +6,6 @@ import http from 'http';
 import { setupWebSocket } from './notification/websocket.js';
 import usuarioRoutes from './routes/usuarios.js';
 import servicoRoutes from './routes/servicos.js';
-import contatoRoutes from './routes/contato.js'
-import usuarioRoutes from './routes/usuarios.js';
-import servicoRoutes from './routes/servicos.js';
 import contatoRoutes from './routes/contato.js';
 import localizacaoRoutes from './routes/localizacao.js'; // ✅ Adicionado
 
