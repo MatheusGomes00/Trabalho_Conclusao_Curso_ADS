@@ -11,7 +11,7 @@ import Rodape from '../components/Rodape';
 import { API_URL } from '../config';
 import { useRouter } from 'expo-router';
 import Modal from 'react-native-modal';
-import { AirbnbRating } from 'react-native-ratings';
+import { Rating } from 'react-native-ratings';
 
 const HistoricoCliente = () => {
   const [servicos, setServicos] = useState([]);
@@ -45,12 +45,28 @@ const HistoricoCliente = () => {
 
   const handleSelectServico = (servico) => {
     setSelectedServico(servico);
-    if (servico.status === 'concluido' && !servico.avaliacao?.avaliado) {
-      setMostrarModalAvaliacao(true);
-    }
+    // O modal será controlado por efeito colateral abaixo
   };
 
-  const handleCloseDetails = () => setSelectedServico(null);
+  useEffect(() => {
+    // Sempre que selectedServico mudar, verifica se precisa abrir o modal
+    if (
+      selectedServico &&
+      selectedServico.status === 'concluido' &&
+      !selectedServico.avaliacao?.avaliado
+    ) {
+      setNotaAvaliacao(5); // valor padrão
+      setMostrarModalAvaliacao(true);
+    } else {
+      setMostrarModalAvaliacao(false);
+    }
+  }, [selectedServico]);
+
+  const handleCloseDetails = () => {
+    setSelectedServico(null);
+    setMostrarModalAvaliacao(false);
+  }
+  
 
   const handleContatar = async () => {
     try {
@@ -177,7 +193,7 @@ const HistoricoCliente = () => {
             {selectedServico.status === 'concluido' && selectedServico.avaliacao?.avaliado && (
               <View style={styles.avaliacaoContainer}>
                 <Text style={styles.avaliacaoTexto}>
-                  ⭐ Avaliação do Motorista: {selectedServico.avaliacao.nota.toFixed(1)} / 5
+                  Avaliação do Motorista: {selectedServico.avaliacao.nota.toFixed(1)} / 5
                 </Text>
               </View>
             )}
@@ -232,17 +248,20 @@ const HistoricoCliente = () => {
         )}
 
         <Modal isVisible={mostrarModalAvaliacao}>
-          <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 12, alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 12, alignItems: 'center', minWidth: 300, minHeight: 220 }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Avalie o motorista</Text>
-            <AirbnbRating
-              count={5}
-              reviews={['Ruim', 'Razoável', 'Bom', 'Muito Bom', 'Excelente']}
-              defaultRating={notaAvaliacao}
+            <Rating
+              type="star"
+              ratingCount={5}
+              imageSize={32}
+              startingValue={notaAvaliacao}
               onFinishRating={setNotaAvaliacao}
+              showRating
+              reviews={['Ruim', 'Razoável', 'Bom', 'Muito Bom', 'Excelente']}
+              style={{ minHeight: 100, marginBottom: 10 }}
             />
             <TouchableOpacity
               style={{
-                marginTop: 20,
                 backgroundColor: '#34C759',
                 padding: 12,
                 borderRadius: 8,
