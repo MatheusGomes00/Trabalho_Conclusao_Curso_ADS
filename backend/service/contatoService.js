@@ -92,6 +92,32 @@ export const iniciarContato = async (req, res) => {
   }
 };
 
+export const avaliarServico = async (req, res) => {
+  try {
+    const servicoId = req.params.id;
+    const { nota } = req.body;
+
+    if (nota < 1 || nota > 5) {
+      return res.status(400).json({ erro: 'Nota inválida' });
+    }
+
+    const servico = await Servico.findById(servicoId).populate('motorista');
+    if (!servico) {
+      return res.status(404).json({ erro: 'Serviço não encontrado' });
+    }
+
+    // Salvar avaliação no serviço
+    servico.avaliacao = { nota, avaliado: true };
+    await servico.save();
+
+    res.json({ mensagem: 'Avaliação salva com sucesso' });
+  } catch (error) {
+    console.error('Erro ao salvar avaliação:', error);
+    res.status(500).json({ erro: 'Erro ao salvar avaliação' });
+  }
+};
+
+
 const buscarContatosDoUsuario = async (usuarioId, tipoUsuario) => {
   const filtro =
     tipoUsuario === 'cliente'

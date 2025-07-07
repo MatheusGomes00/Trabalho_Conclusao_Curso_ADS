@@ -22,25 +22,23 @@ export const formatarEndereco = (local) => {
   const linha1 = [local.cidade, local.estado].filter(Boolean).join(' - ');
   const linha2 = local.endereco || '';
   return `${linha1}\n${linha2}`;
-}
+};
 
 export const listarServicos = async (req, res) => {
   try {
     const { tipo, id } = req.user;
-    const context = req.params.context
+    const context = req.params.context;
 
     let servicos;
 
     if (tipo === 'motorista') {
       if (context === 'disponiveis') {
-        // serviços abertos para motorista aceitar
         servicos = await Servico.find({
           status: 'aberto',
           motorista: null,
           rejeitadoPor: { $nin: [id] },
         }).populate('cliente', '_id nome email telefone');
       } else if (context === 'historico') {
-        // histórico: serviços aceitos ou em andamento ou concluídos
         servicos = await Servico.find({
           status: { $in: ['aceito', 'em andamento', 'concluido'] },
           motorista: id,
@@ -111,23 +109,17 @@ export const aceitarServico = async (req, res) => {
 
   try {
     const servico = await Servico.findById(req.params.id);
-    if (!servico) {
-      return res.status(404).json({ erro: 'Serviço não encontrado' });
-    }
-    if (servico.status !== 'aberto' || servico.motorista) {
-      return res.status(400).json({ erro: 'Serviço não está disponível' });
-    }
-    if (!servico.cliente) {
-      return res.status(500).json({ erro: 'Serviço inválido: cliente não encontrado' });
-    }
-    
-    let motorista = await Usuarios.findById(id);
-    if (!motorista) {
-      return res.status(404).json({ erro: 'Motorista não encontrado' });
-    }
+    if (!servico) return res.status(404).json({ erro: 'Serviço não encontrado' });
+    if (servico.status !== 'aberto' || servico.motorista) return res.status(400).json({ erro: 'Serviço não está disponível' });
+    if (!servico.cliente) return res.status(500).json({ erro: 'Serviço inválido: cliente não encontrado' });
+
+    const motorista = await Usuarios.findById(id);
+    if (!motorista) return res.status(404).json({ erro: 'Motorista não encontrado' });
+
     servico.motoristaNome = motorista.nome;
     servico.motorista = id;
     servico.status = 'aceito';
+
     await servico.save();
 
     const origemFormatada = formatarEndereco(servico.origem);
@@ -153,9 +145,7 @@ export const rejeitarServico = async (req, res) => {
 
   try {
     const servico = await Servico.findById(req.params.id);
-    if (!servico) {
-      return res.status(404).json({ erro: 'Serviço não encontrado' });
-    }
+    if (!servico) return res.status(404).json({ erro: 'Serviço não encontrado' });
 
     if (!['aberto', 'aceito'].includes(servico.status)) {
       return res.status(400).json({ erro: 'Serviço não está disponível para rejeição' });
@@ -166,9 +156,9 @@ export const rejeitarServico = async (req, res) => {
     }
 
     if (servico.status === 'aceito') {
-      // Para serviços aceitos, redefinir status e limpar motorista
       servico.status = 'aberto';
       servico.motorista = null;
+      servico.motoristaNome = null;
     }
 
     servico.rejeitadoPor.push(id);
@@ -188,15 +178,9 @@ export const iniciarServico = async (req, res) => {
 
   try {
     const servico = await Servico.findById(req.params.id);
-    if (!servico) {
-      return res.status(404).json({ erro: 'Serviço não encontrado' });
-    }
-    if (servico.motorista.toString() !== id) {
-      return res.status(403).json({ erro: 'Apenas o motorista atribuído pode iniciar o serviço' });
-    }
-    if (servico.status !== 'aceito') {
-      return res.status(400).json({ erro: 'Serviço deve estar aceito para ser iniciado' });
-    }
+    if (!servico) return res.status(404).json({ erro: 'Serviço não encontrado' });
+    if (servico.motorista.toString() !== id) return res.status(403).json({ erro: 'Apenas o motorista atribuído pode iniciar o serviço' });
+    if (servico.status !== 'aceito') return res.status(400).json({ erro: 'Serviço deve estar aceito para ser iniciado' });
 
     servico.status = 'em andamento';
     await servico.save();
@@ -227,15 +211,9 @@ export const concluirServico = async (req, res) => {
 
   try {
     const servico = await Servico.findById(req.params.id);
-    if (!servico) {
-      return res.status(404).json({ erro: 'Serviço não encontrado' });
-    }
-    if (servico.motorista.toString() !== id) {
-      return res.status(403).json({ erro: 'Apenas o motorista atribuído pode concluir o serviço' });
-    }
-    if (servico.status !== 'em andamento') {
-      return res.status(400).json({ erro: 'Serviço deve estar em andamento para ser concluído' });
-    }
+    if (!servico) return res.status(404).json({ erro: 'Serviço não encontrado' });
+    if (servico.motorista.toString() !== id) return res.status(403).json({ erro: 'Apenas o motorista atribuído pode concluir o serviço' });
+    if (servico.status !== 'em andamento') return res.status(400).json({ erro: 'Serviço deve estar em andamento para ser concluído' });
 
     servico.status = 'concluido';
     servico.dataConclusao = new Date();
@@ -266,15 +244,9 @@ export const cancelarServico = async (req, res) => {
 
   try {
     const servico = await Servico.findById(req.params.id);
-    if (!servico) {
-      return res.status(404).json({ erro: 'Serviço não encontrado' });
-    }
-    if (servico.cliente.toString() !== id) {
-      return res.status(403).json({ erro: 'Apenas o cliente que criou o serviço pode cancelá-lo' });
-    }
-    if (!['aberto', 'aceito'].includes(servico.status)) {
-      return res.status(400).json({ erro: 'Serviço não pode ser cancelado neste estado' });
-    }
+    if (!servico) return res.status(404).json({ erro: 'Serviço não encontrado' });
+    if (servico.cliente.toString() !== id) return res.status(403).json({ erro: 'Apenas o cliente que criou o serviço pode cancelá-lo' });
+    if (!['aberto', 'aceito'].includes(servico.status)) return res.status(400).json({ erro: 'Serviço não pode ser cancelado neste estado' });
 
     servico.status = 'cancelado';
     await servico.save();
@@ -293,5 +265,38 @@ export const cancelarServico = async (req, res) => {
     res.json(servico);
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao cancelar serviço' });
+  }
+};
+
+export const avaliarServico = async (req, res) => {
+  const { tipo, id } = req.user;
+  const { nota } = req.body;
+
+  if (tipo !== 'cliente') {
+    return res.status(403).json({ erro: 'Apenas clientes podem avaliar serviços' });
+  }
+
+  if (!nota || nota < 1 || nota > 5) {
+    return res.status(400).json({ erro: 'Nota inválida. Deve ser entre 1 e 5' });
+  }
+
+  try {
+    const servico = await Servico.findById(req.params.id);
+    if (!servico) return res.status(404).json({ erro: 'Serviço não encontrado' });
+
+    if (servico.cliente.toString() !== id) {
+      return res.status(403).json({ erro: 'Apenas o cliente que criou o serviço pode avaliá-lo' });
+    }
+
+    if (servico.avaliacao?.avaliado) {
+      return res.status(400).json({ erro: 'Serviço já foi avaliado' });
+    }
+
+    servico.avaliacao = { nota, avaliado: true };
+    await servico.save();
+
+    res.json({ mensagem: 'Avaliação salva com sucesso' });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao salvar avaliação' });
   }
 };

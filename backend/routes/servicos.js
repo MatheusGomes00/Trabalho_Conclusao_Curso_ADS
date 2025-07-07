@@ -11,5 +11,6 @@ router.post('/:id/rejeitar', authMiddleware, servico.rejeitarServico);
 router.post('/:id/iniciar', authMiddleware, servico.iniciarServico);
 router.post('/:id/concluir', authMiddleware, servico.concluirServico);
 router.post('/:id/cancelar', authMiddleware, servico.cancelarServico);
+router.post('/:id/avaliar', authMiddleware, servico.avaliarServico);
 
 export default router;

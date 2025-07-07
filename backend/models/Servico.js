@@ -57,6 +57,10 @@ const servicoSchema = new Schema({
   dataConclusao: {
     type: Date,
   },
+  avaliacao: {
+    nota: { type: Number, min: 1, max: 5 },
+    avaliado: { type: Boolean, default: false }
+  },
   rejeitadoPor: [{
     type: Schema.Types.ObjectId,
     ref: 'Usuario',
