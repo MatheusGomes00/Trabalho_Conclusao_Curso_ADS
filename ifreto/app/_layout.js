@@ -72,7 +72,7 @@ export default function Layout() {
         name="postarServico"
         options={{
           title: 'Publicar serviço',
-          headerBackVisible: false,
+          headerBackVisible: true,
         }}
       />
       <Stack.Screen
