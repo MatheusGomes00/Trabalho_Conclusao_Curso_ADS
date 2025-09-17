@@ -3,7 +3,7 @@
 ## Descrição
 Projeto desenvolvido como requisito para conclusão do curso de Análise e Desenvolvimentos de Sistemas. O trabalho foi desenvolvido em parceria com [Patrick Luiz](https://github.com/Patrick-Luiz-Silva) e orientação do [Alexandre Gomes](https://github.com/XandyGomes), e aprovado pela banca examinadora.<br>
 A origem da ideia surgiu de um problema real enfrentado pelo pai e tio do Patrick que são caminhoneiros autonomos que relataram sua dificuldade para localizar serviços na cidade. A partir da identificação deste problema iniciamos o processo de construção desta aplicação mobile para motoristas de fretes.<br>
-Deixamos disponível no diretório [documentacao](.documentacao) o arquivo docx da documentação final de todo o sistema para consulta.
+Deixamos disponível no diretório [documentacao](./documentacao) o arquivo docx da documentação final de todo o sistema para consulta.
 
 ## BPMN
 <div align="center">
