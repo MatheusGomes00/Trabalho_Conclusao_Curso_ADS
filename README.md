@@ -6,14 +6,10 @@ A origem da ideia surgiu de um problema real enfrentado pelo pai e tio do Patric
 Deixamos disponível no diretório [documentacao](.documentacao) o arquivo docx da documentação final de todo o sistema para consulta.
 
 ## BPMN
-<div align="center">
-    <img src="./documentacao/bpmn-v1.jpg">
-</div>
+![BPMN](./documentacao/bpmn-v1.jpg)
 
 ## Diagrama de Casos de Uso
-<div align="center">
-    <img src="./documentacao/casosDeUso.jpg">
-</div>
+![CasosDeUso](./documentacao/casosDeUso.jpg)
 
 ## Funcionalidades
 - **RF01 – Cadastro de motoristas:** Permitir que motoristas realizem seu registro no sistema, informando dados pessoais, contato e documentos necessários.
