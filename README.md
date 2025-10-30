@@ -6,10 +6,10 @@ A origem da ideia surgiu de um problema real enfrentado pelo pai e tio do Patric
 Deixamos disponível no diretório [documentacao](./documentacao) o arquivo docx da documentação final de todo o sistema para consulta.
 
 ## BPMN
-![bpmn](https://drive.google.com/file/d/1gOZCmEySltgr0MklfNMlGOwIMKwTCkis/view?usp=drive_link)
+![bpmn](https://drive.google.com/uc?id=1gOZCmEySltgr0MklfNMlGOwIMKwTCkis)
 
 ## Diagrama de Casos de Uso
-![casosDeUso](https://drive.google.com/file/d/1KKiF1oaSNK7y-Dp7JoclqrE35fJPrIU5/view?usp=drive_link)
+![casosDeUso](https://drive.google.com/uc?id=1KKiF1oaSNK7y-Dp7JoclqrE35fJPrIU5)
 
 
 ## Funcionalidades
