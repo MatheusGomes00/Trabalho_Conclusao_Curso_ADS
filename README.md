@@ -6,14 +6,10 @@ A origem da ideia surgiu de um problema real enfrentado pelo pai e tio do Patric
 Deixamos disponível no diretório [documentacao](./documentacao) o arquivo docx da documentação final de todo o sistema para consulta.
 
 ## BPMN
-<p align="center">
-  <img src="./documentacao/bpmn-v1.jpg" width="600">
-</p>
+![bpmn](/documentacao/bpmn-v1.jpg)
 
 ## Diagrama de Casos de Uso
-<p align="center">
-  <img src="./documentacao/casosDeUso.jpg" width="600">
-</p>
+![casosDeUso](/documentacao/casosDeUso.jpg)
 
 
 ## Funcionalidades
